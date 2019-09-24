@@ -1,7 +1,7 @@
-import { TodoDetailsLogic } from "../logic/todoDetailsSection"
-import React from "react"
+import { TodoDetailsLogic, createTodoDetailsLogic } from "../logic/todoDetails"
+import React, { Fragment } from "react"
 import { makeStyles } from '@material-ui/styles'
-import { Typography, IconButton } from '@material-ui/core'
+import { Typography, IconButton, Dialog } from '@material-ui/core'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -44,7 +44,13 @@ const useStyles = makeStyles({
   },
 })
 
-export const TodoDetails = (p: {className?: string, /*logic: TodoDetailsLogic*/}) => {
+interface TodoDetailsProps {
+  className?: string 
+  startEdit: () => void
+  delete: () => void
+}
+
+export const TodoDetails = (p: TodoDetailsProps) => {
 
   const classes = useStyles()
 
@@ -57,10 +63,10 @@ export const TodoDetails = (p: {className?: string, /*logic: TodoDetailsLogic*/}
           </IconButton>
         </div>
         <div className={classes.actionsRight}>
-          <IconButton className={classes.button}>
+          <IconButton className={classes.button} onClick={p.startEdit}>
             <EditIcon />
           </IconButton>
-          <IconButton className={classes.button}>
+          <IconButton className={classes.button} onClick={p.delete}>
             <DeleteIcon />
           </IconButton>
         </div>
@@ -79,16 +85,4 @@ export const TodoDetails = (p: {className?: string, /*logic: TodoDetailsLogic*/}
       </div>
     </div>
   )
-}
-
-const usePageStyles = makeStyles({
-  root: {
-    padding: '1em',
-    width: '30em'
-  }
-})
-
-export const TodoDetailsPage = () => {
-  const classes = usePageStyles()
-  return <TodoDetails className={classes.root} />
 }
