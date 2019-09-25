@@ -2,6 +2,8 @@ import React from 'react';
 import { TodoDetailsPage } from './TodoDetailsPage';
 import { createMuiTheme } from "@material-ui/core"
 import { ThemeProvider } from '@material-ui/styles'
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
 
 const theme = createMuiTheme({
   overrides: {
@@ -19,9 +21,9 @@ const theme = createMuiTheme({
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <div>
-        <TodoDetailsPage />
-      </div>
+      <Router>
+        <Route path='/todos/:id' component={({match}: any) => <TodoDetailsPage todoId={match.params.id} />} />        
+      </Router>
     </ThemeProvider>
   );
 }

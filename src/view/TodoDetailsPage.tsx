@@ -18,11 +18,11 @@ const usePageStyles = makeStyles({
   }
 })
 
-export const TodoDetailsPage = () => {
+export const TodoDetailsPage = (p: {todoId: string}) => {
   const classes = usePageStyles()
   
   const logic = useTodoDetailsLogic({
-    todoId: '1',
+    todoId: p.todoId,
     todoApi: createTodoApi(),
     onDelete: () => {}
   });
