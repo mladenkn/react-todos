@@ -1,5 +1,5 @@
 import React from 'react';
-import { TodoDetailsPage } from './TodoDetails';
+import { TodoDetailsPage } from './TodoDetailsPage';
 
 const App = () => {
   return (

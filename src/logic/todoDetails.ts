@@ -1,46 +1,8 @@
 import { Todo } from "./shared"
 import { FetchOf, AsyncOperationStatus, RequestStatus } from "../utils"
-import { TodoEditorState } from "./todoEditor"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
-
-// export type TodoDetailsLogic2 = {
-//     type: 'FETCHING'
-//     canStartEdit: false
-//     canDelete: false
-//     todoFetchStatus: 'NOT_INITIATED' | 'PROCESSING'
-// } | {
-//     type: 'FETCH_FAILED'
-//     canStartEdit: false
-//     canDelete: false
-//     todoFetchStatus: 'FAILED'
-// } | {
-//     type: 'NORMAL'
-//     canStartEdit: true
-//     canDelete: true
-//     todoFetchStatus: 'SUCCEEDED'
-//     saveOperationStatus: 'SUCCEEDED' | 'FAILED'
-//     todo: Todo
-//     startEdit: () => void
-//     delete: () => void
-// } | {
-//     type: 'EDITING'
-//     canStartEdit: false
-//     canDelete: false
-//     todoFetchStatus: 'SUCCEEDED'
-//     saveOperationStatus: 'NOT_INITIATED'
-//     todo: Todo
-//     finsihEdit: () => void
-//     cancelEdit: () => void
-// } | {
-//     type: 'EDITING_SAVING'
-//     canStartEdit: false
-//     todoFetchStatus: 'SUCCEEDED'
-//     saveOperationStatus: 'PROCESSING'
-//     todo: Todo
-// }
-
-export type TodoEditingStatus = 'NOT_EDITING' | 'EDITING_NO_REQUEST' | 'EDITING_REQUEST_PENDING' | 'EDITING_REQUEST_SUCCEEDED' | 'EDITING_REQUEST_FAILED'
+import { TodoApi } from "./todoApi";
 
 export interface TodoDetailsLogic {
     fetchTodo: () => void
@@ -49,8 +11,8 @@ export interface TodoDetailsLogic {
     finishEdit: (todo: Todo) => void
     cancelEdit: () => void
 
-    deletingStatus?: RequestStatus
     editingStatus?: 'EDITING' | RequestStatus
+    todoFetchStatus?: AsyncOperationStatus
 
     todo?: Todo
 }
@@ -68,30 +30,55 @@ export const todoDetailsinitialState: TodoDetailsState = {
     deleteStatus: undefined,
 }
 
-export const createTodoDetailsLogic = (
-    initialState_: TodoDetailsState = todoDetailsinitialState,
-    opt?: { noInitialFetch?: boolean }
-): TodoDetailsLogic => {
+interface TodoDetailsProps {
+    initialState?: TodoDetailsState,
+    todoId: string,
+    todoApi: TodoApi,
+    noInitialFetch?: boolean
+    onDelete: () => void
+}
 
-    const [state, updateState] = useImmer<TodoDetailsState>(initialState_)
+export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
 
-    if(!(opt && opt.noInitialFetch))
-        useEffect(() => {
+    const [state, updateState] = useImmer<TodoDetailsState>(p.initialState || todoDetailsinitialState)
+
+    useEffect(() => {
+        if(!p.noInitialFetch)
             fetchTodo()
-        }, [])
+    }, [])
 
     const fetchTodo = () => {
         updateState(s => {
             s.lastTodoFetch = { data: undefined, status: AsyncOperationStatus.Processing }
         })
-        // ...
+        p.todoApi.fetch(p.todoId)
+            .then(todo => {
+                updateState(s => {
+                    s.lastTodoFetch = { data: todo, status: AsyncOperationStatus.Succeeded }
+                })
+            })
+            .catch(() => {
+                updateState(s => {
+                    s.lastTodoFetch = { data: undefined, status: AsyncOperationStatus.Failed }
+                })
+            })
     }
 
     const saveTodo = (todo: Todo) => {
         updateState(s => {
             s.editingStatus = 'REQUEST_PENDING'
         })
-        // ...
+        p.todoApi.save(todo)
+            .then(() => {
+                updateState(s => {
+                    s.editingStatus = 'REQUEST_SUCCEESS'
+                })
+            })
+            .catch(() => {
+                updateState(s => {
+                    s.editingStatus = 'REQUEST_FAILED'
+                })
+            })
     }
   
     const startEdit = () => {
@@ -104,7 +91,18 @@ export const createTodoDetailsLogic = (
         updateState(s => {
             s.deleteStatus = 'REQUEST_PENDING'
         })
-        // ....
+        p.todoApi.delete(p.todoId)
+            .then(() => {
+                updateState(s => {
+                    s.deleteStatus = 'REQUEST_SUCCEESS'
+                    p.onDelete()
+                })
+            })
+            .catch(() => {
+                updateState(s => {
+                    s.deleteStatus = 'REQUEST_FAILED'
+                })
+            })
     }
 
     const finishEdit = (todo: Todo) => {
@@ -124,11 +122,12 @@ export const createTodoDetailsLogic = (
     }
 
     const todo = state.lastTodoChange || (state.lastTodoFetch && state.lastTodoFetch.data && state.lastTodoFetch.data!)
+    const todoFetchStatus = state.lastTodoFetch && state.lastTodoFetch.status
 
     return { 
         todo,
-        editingStatus: state.editingStatus, 
-        deletingStatus: state.deleteStatus, 
+        todoFetchStatus,
+        editingStatus: state.editingStatus,
         startEdit, 
         delete: delete_, 
         finishEdit, 

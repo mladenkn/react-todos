@@ -1,9 +1,10 @@
 import { makeStyles } from "@material-ui/styles"
-import { createTodoDetailsLogic } from "../logic/todoDetails"
+import { useTodoDetailsLogic } from "../logic/todoDetails"
 import React, { Fragment } from "react"
 import { Dialog } from "@material-ui/core"
 import { TodoDetails } from "./TodoDetails"
 import { TodoEditor } from "./TodoEditor"
+import { createTodoApi } from "../logic/todoApi"
 
 
 const usePageStyles = makeStyles({
@@ -15,13 +16,33 @@ const usePageStyles = makeStyles({
 
 export const TodoDetailsPage = () => {
   const classes = usePageStyles()
-  const logic = createTodoDetailsLogic()
+  
+  const logic = useTodoDetailsLogic({
+    todoId: '1',
+    todoApi: createTodoApi(),
+    onDelete: () => {}
+  });
+  (window as any).logic = logic
+  console.log(logic)
+  
   return (
-    <Fragment>
-      <Dialog open={!logic.editingStatus}>
-        <TodoEditor todoInitial={logic.todo!} onSubmit={logic.finishEdit} status={logic.editingStatus!} />
+    <Fragment>    
+    {logic.editingStatus === 'EDITING' &&
+      <Dialog open={true}>
+        <TodoEditor 
+          todoInitial={logic.todo!} 
+          onSubmit={logic.finishEdit} 
+          status={logic.editingStatus!} 
+        />
       </Dialog>
-      <TodoDetails className={classes.root} startEdit={logic.startEdit} delete={logic.delete} />
+    }
+      <TodoDetails 
+        todo={logic.todo!} 
+        todoFetchStatus={logic.todoFetchStatus}
+        className={classes.root} 
+        startEdit={logic.startEdit} 
+        delete={logic.delete} 
+      />
     </Fragment>
   )
 }
