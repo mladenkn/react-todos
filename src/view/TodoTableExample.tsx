@@ -20,6 +20,8 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Todo } from '../logic/shared';
 import { PagedListSearchParams } from '../utils';
+import { Link } from '../utils/components';
+import { ButtonBase } from '@material-ui/core'
 
 export type TodoListItem = Omit<Todo, 'description'>
 
@@ -195,11 +197,11 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '12em',
     },
     actionButton: {
-      padding: '0.4em',
+      padding: '0.3em',
       marginRight: '0.5em',
     },
     actionIcon: {
-      fontSize: '1.3em',
+      fontSize: '1.2em',
     },
   }), { name: 'Table' },
 );
@@ -233,11 +235,19 @@ export default function EnhancedTable(p: Props) {
       setSelectedIds([])
   }
 
-  const handleClick = (id: number) => {
+  const handleRowClick = (id: number) => {
     if(selectedIds.includes(id))
       setSelectedIds(selectedIds.filter(id_ => id_ !== id))
     else
       setSelectedIds(selectedIds.concat(id))
+  }
+
+  const onEditClick = (event: React.MouseEvent<unknown>) => {
+    event.stopPropagation()
+  }
+
+  const onDeleteClick = (event: React.MouseEvent<unknown>) => {
+    event.stopPropagation()
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -267,18 +277,18 @@ export default function EnhancedTable(p: Props) {
               rowCount={todos.length}
             />
             <TableBody>
-              {todos.map((row, index) => {
-                const isItemSelected = selectedIds.includes(row.id)
+              {todos.map((todo, index) => {
+                const isItemSelected = selectedIds.includes(todo.id)
                 const labelId = `enhanced-table-checkbox-${index}`
 
                 return (
                   <TableRow
                     hover
-                    onClick={() => handleClick(row.id)}
+                    onClick={() => handleRowClick(todo.id)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={todo.id}
                     selected={isItemSelected}
                   >
                     <TableCell padding="checkbox">
@@ -289,24 +299,26 @@ export default function EnhancedTable(p: Props) {
                     {/* <TableCell align="left">{row.id}</TableCell> */}
                     </TableCell>
                     <TableCell className={classes.nameCell} component="th" id={labelId} scope="row" padding="none">
-                      {row.name}
+                      {todo.name}
                     </TableCell>
                     <TableCell className={classes.createdAtCell} align="left">
-                      {row.createdAt.toLocaleDateString()} - {row.createdAt.toLocaleTimeString()}
+                      {todo.createdAt.toLocaleDateString()} - {todo.createdAt.toLocaleTimeString()}
                     </TableCell>
                     <TableCell>
-                      <IconButton className={classes.actionButton} size='small'>
-                        <DescriptionIcon className={classes.actionIcon} />
-                      </IconButton>
-                      <IconButton className={classes.actionButton} size='small'>
+                      <Link href={`/todos/${todo.id}`}>
+                        <IconButton className={classes.actionButton} size='small'>
+                          <DescriptionIcon className={classes.actionIcon} />
+                        </IconButton>
+                      </Link>
+                      <IconButton onClick={onEditClick} className={classes.actionButton} size='small'>
                         <EditIcon className={classes.actionIcon} />
                       </IconButton>
-                      <IconButton className={classes.actionButton} size='small'>
+                      <IconButton onClick={onDeleteClick} className={classes.actionButton} size='small'>
                         <DeleteIcon className={classes.actionIcon} />
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                );
+                  );
                 })}
             </TableBody>
           </Table>
