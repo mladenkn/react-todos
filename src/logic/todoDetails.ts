@@ -1,5 +1,5 @@
 import { Todo } from "./shared"
-import { FetchOf, AsyncOperationStatus, RequestStatus } from "../utils"
+import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
 import { TodoApi } from "./todoApi";
@@ -13,7 +13,7 @@ export interface TodoDetailsLogic {
     cancelEdit: () => void
 
     editingStatus?: 'EDITING' | RequestStatus
-    todoFetchStatus?: AsyncOperationStatus
+    todoFetchStatus?: RequestStatus
 
     todo?: Todo
 }
@@ -50,17 +50,17 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
 
     const fetchTodo = () => {
         updateState(s => {
-            s.lastTodoFetch = { data: undefined, status: AsyncOperationStatus.Processing }
+            s.lastTodoFetch = { data: undefined, status: 'REQUEST_PENDING' }
         })
         p.todoApi.fetch(p.todoId)
             .then(todo => {
                 updateState(s => {
-                    s.lastTodoFetch = { data: todo, status: AsyncOperationStatus.Succeeded }
+                    s.lastTodoFetch = { data: todo, status: 'REQUEST_SUCCEESS' }
                 })
             })
             .catch(() => {
                 updateState(s => {
-                    s.lastTodoFetch = { data: undefined, status: AsyncOperationStatus.Failed }
+                    s.lastTodoFetch = { data: undefined, status: 'REQUEST_FAILED' }
                 })
             })
     }

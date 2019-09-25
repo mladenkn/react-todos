@@ -5,7 +5,7 @@ export enum AsyncOperationStatus {
 export interface FetchOf<TData> {
     data?: TData
     // status: 'NOT_INITIATED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
-    status: AsyncOperationStatus
+    status: RequestStatus
 }
 
 export type RequestStatus = 'REQUEST_PENDING' | 'REQUEST_SUCCEESS' | 'REQUEST_FAILED'

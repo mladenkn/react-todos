@@ -1,12 +1,11 @@
-import { TodoDetailsLogic, useTodoDetailsLogic } from "../logic/todoDetails"
-import React, { Fragment } from "react"
+import React from "react"
 import { makeStyles } from '@material-ui/styles'
 import { Typography, IconButton, Dialog } from '@material-ui/core'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
 import { Todo } from "../logic/shared"
-import { AsyncOperationStatus } from "../utils"
+import { RequestStatus } from "../utils"
 
 const useStyles = makeStyles({
   heading: {
@@ -41,7 +40,7 @@ const useStyles = makeStyles({
 interface TodoDetailsProps {
   className?: string 
   todo: Todo
-  todoFetchStatus?: AsyncOperationStatus
+  todoFetchStatus?: RequestStatus
   startEdit: () => void
   delete: () => void
 }
@@ -55,10 +54,10 @@ export const TodoDetails = (p: TodoDetailsProps) => {
       case undefined:
         return <div className={classes.body}>loading...</div>
 
-      case AsyncOperationStatus.Processing:
+      case 'REQUEST_PENDING':
         return <div className={classes.body}>loading...</div>
 
-      case AsyncOperationStatus.Succeeded: 
+      case 'REQUEST_SUCCEESS': 
         return <div className={classes.body}>
           <div className={classes.prop}>
             <Typography className={classes.propLabel}>Name:</Typography>
@@ -74,7 +73,7 @@ export const TodoDetails = (p: TodoDetailsProps) => {
           </div>
         </div>
 
-      case AsyncOperationStatus.Failed:
+      case 'REQUEST_FAILED':
         return <div className={classes.body}>error</div>
     }
   }
