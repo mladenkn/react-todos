@@ -41,7 +41,7 @@ export const TodoEditor = (p: Props) => {
   const classes = useStyles()
 
   const validate = (values: Optional<TodoFormValues>) => {
-
+    
   }
 
   const onSubmit = (values: Optional<TodoFormValues>) => {
@@ -51,14 +51,12 @@ export const TodoEditor = (p: Props) => {
   return (
     <Formik onSubmit={onSubmit} validate={validate} initialValues={p.todoInitial}>
       {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) =>
-        <Form className={clsx(classes.root, p.className)}>
-          <TextField 
-            name='name'
-            label='Name'
-            value={values.name}
-            onBlur={handleBlur}
-            onChange={handleChange}
-          />
+        <Form className={clsx(classes.root, p.className)}>          
+          <Field name='name'>
+            {({ field }: any) =>
+              <TextField label='Name' {...field} />
+            }
+          </Field>
           <TextField 
             className={classes.description}
             multiline
