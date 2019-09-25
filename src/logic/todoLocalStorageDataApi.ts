@@ -4,6 +4,7 @@ export interface TodoDataApi {
     fetch: (todoId: string) => Promise<Todo>
     save: (todo: Todo) => Promise<Todo>
     delete: (todoId: string) => Promise<any>
+    fetchList: () => Todo[]
 }
 
 const resolvesAfter = <T> (milis: number, data?: T) => {
@@ -11,6 +12,13 @@ const resolvesAfter = <T> (milis: number, data?: T) => {
 }
 
 export const createTodoLocalStorageDataApi = (): TodoDataApi => {
+
+    const fetchList = () => {
+        const items = Object.entries(localStorage)
+            .filter(([key, value]) => key.startsWith('todos/'))
+            .map(([key, value]) => JSON.parse(value))
+        return items as Todo[]
+    }
 
     const fetch = (todoId: string) => {
         const todo = localStorage.getItem(`todos/${todoId}`)!
@@ -28,5 +36,5 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
         return resolvesAfter(500);
     }
 
-    return { fetch, save, delete: delete_ }
+    return { fetchList, fetch, save, delete: delete_ }
 } 

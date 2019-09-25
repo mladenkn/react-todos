@@ -20,11 +20,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 
 interface Data {
-  calories: number;
-  carbs: number;
-  fat: number;
   name: string;
-  protein: number;
+  createdAt: string;
 }
 
 function desc<T>(a: T, b: T, orderBy: keyof T) {
@@ -64,11 +61,8 @@ interface headCell {
 }
 
 const headCells: headCell[] = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Dessert (100g serving)' },
-  { id: 'calories', numeric: true, disablePadding: false, label: 'Calories' },
-  { id: 'fat', numeric: true, disablePadding: false, label: 'Fat (g)' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: 'Carbs (g)' },
-  { id: 'protein', numeric: true, disablePadding: false, label: 'Protein (g)' },
+  { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
+  { id: 'createdAt', numeric: true, disablePadding: false, label: 'Created at' },
 ];
 
 interface EnhancedTableProps {
@@ -149,7 +143,7 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     title: {
       flex: '0 0 auto',
     },
-  }),
+  }), { name: 'Toolbar'},
 );
 
 interface EnhancedTableToolbarProps {
@@ -173,7 +167,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            Nutrition
+            Todos
           </Typography>
         )}
       </div>
@@ -200,15 +194,14 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: '100%',
       marginTop: theme.spacing(3),
+      display: 'inline-block',
     },
     paper: {
-      width: '100%',
       marginBottom: theme.spacing(2),
     },
     table: {
-      minWidth: 750,
+      minWidth: 500,
     },
     tableWrapper: {
       overflowX: 'auto',
@@ -224,17 +217,16 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 20,
       width: 1,
     },
-  }),
+  }), { name: 'Table' },
 );
 
 export default function EnhancedTable(p: {rows: Data[]}) {
   const { rows } = p
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('calories');
+  const [orderBy, setOrderBy] = React.useState<keyof Data>('name');
   const [selected, setSelected] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Data) => {
@@ -281,10 +273,6 @@ export default function EnhancedTable(p: {rows: Data[]}) {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
@@ -297,7 +285,6 @@ export default function EnhancedTable(p: {rows: Data[]}) {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
           >
             <EnhancedTableHead
               classes={classes}
@@ -334,10 +321,7 @@ export default function EnhancedTable(p: {rows: Data[]}) {
                       <TableCell component="th" id={labelId} scope="row" padding="none">
                         {row.name}
                       </TableCell>
-                      <TableCell align="right">{row.calories}</TableCell>
-                      <TableCell align="right">{row.fat}</TableCell>
-                      <TableCell align="right">{row.carbs}</TableCell>
-                      <TableCell align="right">{row.protein}</TableCell>
+                      <TableCell align="right">{row.createdAt}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -365,10 +349,6 @@ export default function EnhancedTable(p: {rows: Data[]}) {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </div>
   );
 }
