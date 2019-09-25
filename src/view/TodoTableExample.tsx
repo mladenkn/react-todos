@@ -21,19 +21,13 @@ import { PagedListSearchParams } from '../utils';
 
 export type TodoListItem = Omit<Todo, 'description'>
 
-type Order = 'asc' | 'desc';
+type Order = 'asc' | 'desc'
 
-interface headCell {
-  disablePadding: boolean;
-  id: keyof TodoListItem;
-  label: string;
-  numeric: boolean;
-}
-
-const headCells: headCell[] = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
-  { id: 'createdAt', numeric: true, disablePadding: false, label: 'Created at' },
-];
+const headCells = [
+  // { id: 'id', disablePadding: true, label: 'Id' },
+  { id: 'name' as keyof TodoListItem, disablePadding: true, label: 'Name' },
+  { id: 'createdAt' as keyof TodoListItem, disablePadding: false, label: 'Created at' },
+]
 
 interface EnhancedTableProps {
   classes: ReturnType<typeof useStyles>;
@@ -65,7 +59,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells.map(headCell => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align='left'
             padding={headCell.disablePadding ? 'none' : 'default'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -171,7 +165,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: theme.spacing(2),
     },
     table: {
-      minWidth: 500,
+      minWidth: 400,
     },
     tableWrapper: {
       overflowX: 'auto',
@@ -186,6 +180,9 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: 20,
       width: 1,
+    },
+    createdAtCell: {
+      width: '14em',
     },
   }), { name: 'Table' },
 );
@@ -204,69 +201,40 @@ export default function EnhancedTable(p: Props) {
   const { order, orderBy, page, rowsPerPage } = p.lastSearchParams
   const { rows, todoTotatCount } = p
 
-  const setOrder = (order: 'asc' | 'desc') => p.onSearchParamsChange({...p.lastSearchParams, order})
-  const setOrderBy = (orderBy: keyof TodoListItem) => p.onSearchParamsChange({...p.lastSearchParams, orderBy})
-  const setPage = (page: number) => p.onSearchParamsChange({...p.lastSearchParams, page})
-  const setRowsPerPage = (rowsPerPage: number) => p.onSearchParamsChange({...p.lastSearchParams, rowsPerPage})
-
-  // const [order, setOrder] = React.useState<Order>('asc');
-  // const [orderBy, setOrderBy] = React.useState<keyof Data>('name');
-  const [selected, setSelected] = React.useState<string[]>([]);
-  // const [page, setPage] = React.useState(0);
-  // const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
+  console.log(selectedIds)
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => {
-    const isDesc = orderBy === property && order === 'desc';
-    setOrder(isDesc ? 'asc' : 'desc');
-    setOrderBy(property);
-  };
+    const isDesc = orderBy === property && order === 'desc'
+    p.onSearchParamsChange({...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property})
+  }
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelecteds = rows.map(n => n.name);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
+    if (event.target.checked)
+      setSelectedIds(rows.map(n => n.id))
+    else
+      setSelectedIds([])
+  }
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-
-    setSelected(newSelected);
-  };
+  const handleClick = (id: number) => {
+    if(selectedIds.includes(id))
+      setSelectedIds(selectedIds.filter(id_ => id_ !== id))
+    else
+      setSelectedIds(selectedIds.concat(id))
+  }
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
+    p.onSearchParamsChange({...p.lastSearchParams, page: newPage})
+  }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
-
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    p.onSearchParamsChange({ ...p.lastSearchParams, rowsPerPage: +event.target.value, page: 0 })
+  }
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selectedIds.length} />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}
@@ -274,7 +242,7 @@ export default function EnhancedTable(p: Props) {
           >
             <EnhancedTableHead
               classes={classes}
-              numSelected={selected.length}
+              numSelected={selectedIds.length}
               order={order}
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
@@ -283,17 +251,17 @@ export default function EnhancedTable(p: Props) {
             />
             <TableBody>
               {rows.map((row, index) => {
-                const isItemSelected = isSelected(row.name);
-                const labelId = `enhanced-table-checkbox-${index}`;
+                const isItemSelected = selectedIds.includes(row.id)
+                const labelId = `enhanced-table-checkbox-${index}`
 
                 return (
                   <TableRow
                     hover
-                    onClick={event => handleClick(event, row.name)}
+                    onClick={() => handleClick(row.id)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.name}
+                    key={row.id}
                     selected={isItemSelected}
                   >
                     <TableCell padding="checkbox">
@@ -301,19 +269,17 @@ export default function EnhancedTable(p: Props) {
                         checked={isItemSelected}
                         inputProps={{ 'aria-labelledby': labelId }}
                       />
+                    {/* <TableCell align="left">{row.id}</TableCell> */}
                     </TableCell>
                     <TableCell component="th" id={labelId} scope="row" padding="none">
                       {row.name}
                     </TableCell>
-                    <TableCell align="right">{row.createdAt.toString()}</TableCell>
+                    <TableCell className={classes.createdAtCell} align="left">
+                      {row.createdAt.toLocaleDateString()} - {row.createdAt.toLocaleTimeString()}
+                    </TableCell>
                   </TableRow>
                 );
                 })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </div>

@@ -12,16 +12,37 @@ const resolvesAfter = <T> (milis: number, data?: T) => {
     return new Promise<T>(resolve => setTimeout(() => resolve(data), milis))    
 }
 
+const todoJsonReviver = (key: string, value: any) => 
+    key === 'createdAt' ? new Date(value) : value
+
 export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
     const fetchList = (p: PagedListSearchParams<Todo>) => {
         const entries = Object.entries(localStorage)            
         const pageStart = p.rowsPerPage * p.page
         const pageEnd = pageStart + p.rowsPerPage
+
         const items = entries
             .filter(([key, value]) => key.startsWith('todos/'))
-            .map(([key, value]) => JSON.parse(value) as Todo)
-            .slice(pageStart, pageEnd)        
+            .map(([key, value]) => JSON.parse(value, todoJsonReviver) as Todo)
+            .sort((a, b) => {
+                if (p.orderBy === 'createdAt' && p.order === 'desc')
+                    return b.createdAt.getTime() - a.createdAt.getTime()
+               
+                else if (p.orderBy === 'createdAt' && p.order === 'asc')
+                    return a.createdAt.getTime() - b.createdAt.getTime()
+               
+                else if (p.orderBy === 'name' && p.order === 'desc')
+                    return b.name.localeCompare(a.name)
+               
+                else if (p.orderBy === 'name' && p.order === 'asc')
+                    return a.name.localeCompare(b.name)
+               
+                else 
+                    throw new Error()
+            })
+            .slice(pageStart, pageEnd)
+
         return {
             data: items,
             totalCount: entries.length,
@@ -30,7 +51,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
     const fetch = (todoId: string) => {
         const todo = localStorage.getItem(`todos/${todoId}`)!
-        return resolvesAfter<Todo>(500, JSON.parse(todo)) // simulating slow fetch
+        return resolvesAfter<Todo>(500, JSON.parse(todo, todoJsonReviver)) // simulating slow fetch
     }
 
     const save = (todo: Todo) => {
