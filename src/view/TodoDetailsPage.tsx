@@ -11,6 +11,10 @@ const usePageStyles = makeStyles({
   root: {
     padding: '1em',
     width: '30em'
+  },
+  todoEditor: {
+    padding: '1em',
+    width: '30em',
   }
 })
 
@@ -28,10 +32,12 @@ export const TodoDetailsPage = () => {
   return (
     <Fragment>    
     {logic.editingStatus === 'EDITING' &&
-      <Dialog open={true}>
+      <Dialog open={true} onClose={logic.cancelEdit}>
         <TodoEditor 
+          className={classes.todoEditor}
           todoInitial={logic.todo!} 
           onSubmit={logic.finishEdit} 
+          onCancel={logic.cancelEdit}
           status={logic.editingStatus!} 
         />
       </Dialog>

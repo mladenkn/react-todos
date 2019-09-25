@@ -3,12 +3,13 @@ import { FetchOf, AsyncOperationStatus, RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
 import { TodoApi } from "./todoApi";
+import { TodoFormValues } from "../view/TodoEditor";
 
 export interface TodoDetailsLogic {
     fetchTodo: () => void
     startEdit: () => void
     delete: () => void
-    finishEdit: (todo: Todo) => void
+    finishEdit: (todo: TodoFormValues) => void
     cancelEdit: () => void
 
     editingStatus?: 'EDITING' | RequestStatus
@@ -69,8 +70,9 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
             s.editingStatus = 'REQUEST_PENDING'
         })
         p.todoApi.save(todo)
-            .then(() => {
+            .then(updatedTodo => {
                 updateState(s => {
+                    s.lastTodoChange = updatedTodo
                     s.editingStatus = 'REQUEST_SUCCEESS'
                 })
             })
@@ -105,11 +107,14 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
             })
     }
 
-    const finishEdit = (todo: Todo) => {
+    const todo = state.lastTodoChange || (state.lastTodoFetch && state.lastTodoFetch.data && state.lastTodoFetch.data!)
+    const todoFetchStatus = state.lastTodoFetch && state.lastTodoFetch.status
+
+    const finishEdit = (todoFormValues: TodoFormValues) => {
         if(state.editingStatus !== 'EDITING')
             throw new Error()
         else 
-            saveTodo(todo)
+            saveTodo({...todo!, ...todoFormValues})
     }
 
     const cancelEdit = () => {
@@ -120,9 +125,6 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
                 s.editingStatus = undefined
             })
     }
-
-    const todo = state.lastTodoChange || (state.lastTodoFetch && state.lastTodoFetch.data && state.lastTodoFetch.data!)
-    const todoFetchStatus = state.lastTodoFetch && state.lastTodoFetch.status
 
     return { 
         todo,
