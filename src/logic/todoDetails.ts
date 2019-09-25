@@ -2,7 +2,7 @@ import { Todo } from "./shared"
 import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
-import { TodoApi } from "./todoApi";
+import { TodoDataApi } from "./todoLocalStorageDataApi";
 import { TodoFormValues } from "../view/TodoEditor";
 
 export interface TodoDetailsLogic {
@@ -34,7 +34,7 @@ export const todoDetailsinitialState: TodoDetailsState = {
 interface TodoDetailsProps {
     initialState?: TodoDetailsState,
     todoId: string,
-    todoApi: TodoApi,
+    todoApi: TodoDataApi,
     noInitialFetch?: boolean
     onDelete: () => void
 }

@@ -4,7 +4,7 @@ import React, { Fragment } from "react"
 import { Dialog } from "@material-ui/core"
 import { TodoDetails } from "./TodoDetails"
 import { TodoEditor } from "./TodoEditor"
-import { createTodoApi } from "../logic/todoApi"
+import { createTodoLocalStorageDataApi } from "../logic/todoLocalStorageDataApi"
 
 
 const usePageStyles = makeStyles({
@@ -23,7 +23,7 @@ export const TodoDetailsPage = (p: {todoId: string}) => {
   
   const logic = useTodoDetailsLogic({
     todoId: p.todoId,
-    todoApi: createTodoApi(),
+    todoApi: createTodoLocalStorageDataApi(),
     onDelete: () => {}
   });
   (window as any).logic = logic
