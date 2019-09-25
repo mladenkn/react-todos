@@ -4,12 +4,11 @@ import { generateArray } from '../utils'
 let nextTodoId: number = 1
 const generateTodo = () => {
     const todo = {
-        id: nextTodoId.toString(),
+        id: nextTodoId++,
         name: faker.lorem.word(),
         description: faker.lorem.paragraph(),
         createdAt: faker.date.past()
-    }
-    nextTodoId++
+    }   
     return todo
 }
 

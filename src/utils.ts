@@ -19,3 +19,10 @@ export const generateArray = <T> (getNext: () => T, minCount: number, maxCount: 
         r.push(getNext());
     return r;
 }
+
+export interface PagedListSearchParams<T> {
+    order: 'asc' | 'desc'
+    orderBy: keyof T
+    page: number
+    rowsPerPage: number
+}
