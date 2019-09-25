@@ -2,7 +2,7 @@ import React from 'react';
 import { TodoDetailsPage } from './TodoDetailsPage';
 import { createMuiTheme } from "@material-ui/core"
 import { ThemeProvider } from '@material-ui/styles'
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import { TodoListPage } from './TodoListPage';
 
 

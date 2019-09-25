@@ -28,7 +28,7 @@ export const TodoListPage = () => {
   return (
     <div>
       <TodoTableExample 
-        rows={todoList.data} 
+        todos={todoList.data} 
         todoTotatCount={todoList.totalCount}
         lastSearchParams={searchParams}
         onSearchParamsChange={setSearchParams}

@@ -15,6 +15,8 @@ import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Todo } from '../logic/shared';
 import { PagedListSearchParams } from '../utils';
@@ -23,7 +25,7 @@ export type TodoListItem = Omit<Todo, 'description'>
 
 type Order = 'asc' | 'desc'
 
-const headCells = [
+const todoPropsHeadCells = [
   // { id: 'id', disablePadding: true, label: 'Id' },
   { id: 'name' as keyof TodoListItem, disablePadding: true, label: 'Name' },
   { id: 'createdAt' as keyof TodoListItem, disablePadding: false, label: 'Created at' },
@@ -56,20 +58,20 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             inputProps={{ 'aria-label': 'select all desserts' }}
           />
         </TableCell>
-        {headCells.map(headCell => (
+        {todoPropsHeadCells.map(cell => (
           <TableCell
-            key={headCell.id}
+            key={cell.id}
             align='left'
-            padding={headCell.disablePadding ? 'none' : 'default'}
-            sortDirection={orderBy === headCell.id ? order : false}
+            padding={cell.disablePadding ? 'none' : 'default'}
+            sortDirection={orderBy === cell.id ? order : false}
           >
             <TableSortLabel
-              active={orderBy === headCell.id}
+              active={orderBy === cell.id}
               direction={order}
-              onClick={createSortHandler(headCell.id)}
+              onClick={createSortHandler(cell.id)}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
+              {cell.label}
+              {orderBy === cell.id ? (
                 <span className={classes.visuallyHidden}>
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                 </span>
@@ -77,6 +79,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             </TableSortLabel>
           </TableCell>
         ))}
+        <TableCell className={classes.actionHeadCell}>
+          Actions
+        </TableCell>
       </TableRow>
     </TableHead>
   );
@@ -165,7 +170,9 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: theme.spacing(2),
     },
     table: {
-      minWidth: 400,
+    },
+    actionHeadCell: {
+      paddingLeft: '2.1em'
     },
     tableWrapper: {
       overflowX: 'auto',
@@ -181,14 +188,24 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 20,
       width: 1,
     },
+    nameCell: {
+      width: '10em'
+    },
     createdAtCell: {
-      width: '14em',
+      width: '12em',
+    },
+    actionButton: {
+      padding: '0.4em',
+      marginRight: '0.5em',
+    },
+    actionIcon: {
+      fontSize: '1.3em',
     },
   }), { name: 'Table' },
 );
 
 export interface Props {
-  rows: TodoListItem[]
+  todos: TodoListItem[]
   todoTotatCount: number
   lastSearchParams: PagedListSearchParams<TodoListItem>
   onSearchParamsChange: (p: PagedListSearchParams<TodoListItem>) => void
@@ -196,12 +213,12 @@ export interface Props {
 
 export default function EnhancedTable(p: Props) {
   
-  const classes = useStyles();
+  const classes = useStyles()
 
   const { order, orderBy, page, rowsPerPage } = p.lastSearchParams
-  const { rows, todoTotatCount } = p
+  const { todos: todos, todoTotatCount } = p
 
-  const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = React.useState<number[]>([])
   console.log(selectedIds)
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => {
@@ -211,7 +228,7 @@ export default function EnhancedTable(p: Props) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked)
-      setSelectedIds(rows.map(n => n.id))
+      setSelectedIds(todos.map(n => n.id))
     else
       setSelectedIds([])
   }
@@ -247,10 +264,10 @@ export default function EnhancedTable(p: Props) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={todos.length}
             />
             <TableBody>
-              {rows.map((row, index) => {
+              {todos.map((row, index) => {
                 const isItemSelected = selectedIds.includes(row.id)
                 const labelId = `enhanced-table-checkbox-${index}`
 
@@ -271,11 +288,22 @@ export default function EnhancedTable(p: Props) {
                       />
                     {/* <TableCell align="left">{row.id}</TableCell> */}
                     </TableCell>
-                    <TableCell component="th" id={labelId} scope="row" padding="none">
+                    <TableCell className={classes.nameCell} component="th" id={labelId} scope="row" padding="none">
                       {row.name}
                     </TableCell>
                     <TableCell className={classes.createdAtCell} align="left">
                       {row.createdAt.toLocaleDateString()} - {row.createdAt.toLocaleTimeString()}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton className={classes.actionButton} size='small'>
+                        <DescriptionIcon className={classes.actionIcon} />
+                      </IconButton>
+                      <IconButton className={classes.actionButton} size='small'>
+                        <EditIcon className={classes.actionIcon} />
+                      </IconButton>
+                      <IconButton className={classes.actionButton} size='small'>
+                        <DeleteIcon className={classes.actionIcon} />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 );
