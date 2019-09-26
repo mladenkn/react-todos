@@ -11,6 +11,10 @@ const useStyles = makeStyles({
   root: {
     padding: '1.5em'
   },
+  todoEditor: {
+    padding: '1em',
+    width: '35em',
+  },
 })
 
 const initalSearchParams: PagedListSearchParams<TodoListItem> = {
@@ -31,11 +35,9 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
 
   console.log(logic)
 
-  const isEditing = logic.lastEdit && (logic.lastEdit.status !== "CANCELED")
-  const isCreating = logic.lastCreate && (logic.lastCreate.status !== "CANCELED")
-  const isDeleting = logic.lastDelete && 
-    (logic.lastDelete.status !== "CANCELED") && 
-    (logic.lastDelete.status === 'UNCONFIRMED')
+  const isEditing = logic.lastEdit && (logic.lastEdit.status === "USER_EDITING")
+  const isCreating = logic.lastCreate && (logic.lastCreate.status === "USER_CREATING")
+  const shouldConfirmEdit = logic.lastDelete && (logic.lastDelete.status === 'UNCONFIRMED')
 
   return (
     <div className={classes.root}>
@@ -56,6 +58,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
       {isEditing &&
         <Dialog open={true} onClose={logic.cancelEdit}>
           <TodoEditor 
+            className={classes.todoEditor}
             todoInitial={logic.lastEdit!.todo!}
             onCancel={logic.cancelEdit}
             onSubmit={logic.finishEdit}
@@ -65,22 +68,31 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
       {isCreating &&
         <Dialog open={true} onClose={logic.cancelEdit}>
           <TodoEditor 
+            className={classes.todoEditor}
             onCancel={logic.cancelCreate}
             onSubmit={logic.finsihCreate}
           />
         </Dialog>
       }
-      {isDeleting && <ConfirmDeleteDialog onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />}
+      {shouldConfirmEdit && 
+        <ConfirmDeleteDialog onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />}
     </div>
   )
 }
 
 const useConfirmDeleteDialogStyles = makeStyles({
   root: {
-
+    padding: '0.5em',
+    width: '9.5em',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   actions: {
     display: 'flex',
+    marginTop: '1em',
+    width: '100%',
+    justifyContent: 'space-between',
   },
 })
 
@@ -91,8 +103,8 @@ const ConfirmDeleteDialog = (p: {onConfirm: () => void, onCancel: () => void}) =
       <div className={classes.root}>
         <Typography>Are you sure?</Typography>
         <div className={classes.actions}>
-          <Button onClick={p.onCancel} variant='outlined' color='secondary'>Cancel</Button>
-          <Button onClick={p.onConfirm} variant='outlined' color='primary'>OK</Button>
+          <Button size='small' onClick={p.onCancel} variant='outlined' color='secondary'>Cancel</Button>
+          <Button size='small' onClick={p.onConfirm} variant='outlined' color='primary'>OK</Button>
         </div>
       </div>
     </Dialog>
