@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, TextField, Button } from "@material-ui/core"
-import { Todo } from '../logic/shared'
+import { Todo, TodoEditableProps } from '../logic/shared'
 import { RequestStatus } from '../utils'
 import { Formik, FormikActions, FormikProps, Form, Field, FieldProps } from 'formik';
 import clsx from 'clsx'
@@ -24,32 +24,28 @@ const useStyles = makeStyles({
   },
 })
 
-export interface TodoFormValues {
-  name: string
-  description: string
-}
-
 interface Props {
   className?: string
-  todoInitial: Optional<TodoFormValues>
+  todoInitial?: TodoEditableProps
   onCancel: () => void
-  onSubmit: (todo: TodoFormValues) => void
-  status: 'EDITING' | RequestStatus
+  onSubmit: (todo: TodoEditableProps) => void
 }
 
 export const TodoEditor = (p: Props) => {
   const classes = useStyles()
 
-  const validate = (values: Optional<TodoFormValues>) => {
+  const validate = (values: TodoEditableProps) => {
     
   }
 
-  const onSubmit = (values: Optional<TodoFormValues>) => {
-    p.onSubmit(values as TodoFormValues)
+  const onSubmit = (values: TodoEditableProps) => {
+    p.onSubmit(values as TodoEditableProps)
   }
 
+  const initialValues = p.todoInitial || { name: '', description: '' }
+
   return (
-    <Formik onSubmit={onSubmit} validate={validate} initialValues={p.todoInitial}>
+    <Formik onSubmit={onSubmit} validate={validate} initialValues={initialValues}>
       {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) =>
         <Form className={clsx(classes.root, p.className)}>          
           <Field name='name'>

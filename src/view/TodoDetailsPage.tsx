@@ -38,7 +38,6 @@ export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
           todoInitial={logic.todo!} 
           onSubmit={logic.finishEdit} 
           onCancel={logic.cancelEdit}
-          status={logic.editingStatus!} 
         />
       </Dialog>
     }

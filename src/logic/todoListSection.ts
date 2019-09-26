@@ -1,74 +1,112 @@
 import { FetchOf, RequestStatus, PagedListSearchParams, PagedList } from "../utils"
-import { TodoListItem, TodoDataApi } from "./todoDataApi"
+import { TodoDataApi } from "./todoDataApi"
 import { useImmer } from "use-immer"
-import { Todo } from "./shared"
-import { useEffect } from "react"
+import { Todo, TodoEditableProps } from "./shared"
 
 interface State {
     lastFetch?: FetchOf<PagedList<Todo>>
-    searchParams: PagedListSearchParams<Todo>
+    searchParams?: PagedListSearchParams<Todo>
+    selectedItems: number[]
     changesSinceLastFetch: {
         deleted: number[]
         new: Todo[]
         updated: Record<number, Todo>
     }
     lastDelete?: {
-        items: number[]
-        status: 'UNCONFIRMED' | RequestStatus
+        status: 'UNCONFIRMED' | 'CANCELED' | RequestStatus
     }
     lastEdit?: {
         itemId: number
-        status: 'USER_EDITING' | RequestStatus
+        status: 'USER_EDITING' | 'CANCELED'  | RequestStatus
     }
     lastCreate?: {
-        status: 'USER_CREATING' | RequestStatus
+        status: 'USER_CREATING' | 'CANCELED' | RequestStatus
     }
 }
 
 interface Props {
     api: TodoDataApi
     initialState?: State
-    noInitialFetch?: boolean
 }
 
 const zeroState: State = {
-    lastFetch: undefined,
-    searchParams: {
-        order: 'desc',
-        orderBy: 'createdAt',
-        page: 0,
-        rowsPerPage: 7,   
-    },
+    selectedItems: [],
     changesSinceLastFetch: {
         deleted: [],
         new: [],
-        updated: {}
+        updated: {},
     },
-    lastDelete: undefined
 }
 
 export const useTodoListSectionLogic = (p: Props) => {
 
     const [state, updateState] = useImmer<State>(p.initialState || zeroState)
+    console.log(state)
 
-    useEffect(() => {
-        if(!p.noInitialFetch)
-            fetchList()
-    })
+
+    const getCurrentTodos = () => {
+
+        if(!state.lastFetch || !state.lastFetch.data)
+            return undefined
+
+        const withoutNewOnes = state.lastFetch!.data!.data
+            .filter(todo => !state.changesSinceLastFetch.deleted.includes(todo.id))
+            .map(todo => {
+                const changedTodo = state.changesSinceLastFetch.updated[todo.id]
+                if(changedTodo !== undefined)
+                    return changedTodo
+                else
+                    return todo
+            })
+        
+        return [...withoutNewOnes, ...state.changesSinceLastFetch.new]
+            .map(t => {
+                const isSelected = state.selectedItems.includes(t.id)
+                return { ...t, isSelected }
+            })
+    }
+
+    const totalCount = (state.lastFetch && state.lastFetch!.data) ?
+        state.lastFetch!.data!.totalCount + state.changesSinceLastFetch.new.length : 
+        undefined
+
+    const todos = {
+        data: getCurrentTodos(),
+        totalCount,
+        loadStatus: state.lastFetch && state.lastFetch!.status
+    }
+
+    const lastEdit = state.lastEdit &&  {
+        ...state.lastEdit,
+        todo: todos.data!.find(t => t.id === state.lastEdit!.itemId)
+    }
+
+
     
-    const delete_ = (ids: number[]) => updateState(stateDraft => {
-        stateDraft.lastDelete = { items: ids, status: 'UNCONFIRMED' }
-    })
+    const delete_ = (id: number) => {
+        const isSelected = state.selectedItems.includes(id)
+        updateState(stateDraft => {
+            if(!isSelected)
+                stateDraft.selectedItems.push(id)
+            stateDraft.lastDelete = { status: 'UNCONFIRMED' };
+        })
+    }
+
+    const deleteSelected = () => {
+        updateState(stateDraft => {
+            stateDraft.lastDelete = { status: 'UNCONFIRMED' };
+        })
+    }
 
     const confirmDelete = () => {
         updateState(stateDraft => {
             stateDraft.lastDelete!.status = 'REQUEST_PENDING';
         })
-        p.api.delete(state.lastDelete!.items)
+        p.api.delete(state.selectedItems)
             .then(() => {
                 updateState(stateDraft => {
                     stateDraft.lastDelete!.status = 'REQUEST_SUCCEESS'
-                    stateDraft.lastDelete!.items.forEach(todoId => {
+                    stateDraft.selectedItems.forEach(todoId => {
                         stateDraft.changesSinceLastFetch.deleted.push(todoId)
                     })
                 })
@@ -80,11 +118,18 @@ export const useTodoListSectionLogic = (p: Props) => {
             })
     }
 
-    const fetchList = () => {
+    const cancelDelete = () => {
+        updateState(stateDraft => {
+            stateDraft.lastDelete!.status = 'CANCELED'
+        })
+    }
+
+    const fetchList = (params: PagedListSearchParams<Todo>) => {
         updateState(stateDraft => {
             stateDraft.lastFetch = { data: undefined, status: 'REQUEST_PENDING' }
+            stateDraft.searchParams = params
         })
-        p.api.fetchList(state.searchParams)
+        p.api.fetchList(params)
             .then(response => {
                 updateState(stateDraft => {
                     stateDraft.lastFetch = {
@@ -110,11 +155,11 @@ export const useTodoListSectionLogic = (p: Props) => {
         })
     }
 
-    const finishEdit = (todo: Omit<Todo, 'id'>) => {
+    const finishEdit = (editedTodo: TodoEditableProps) => {
         updateState(stateDraft => {
             stateDraft.lastEdit!.status = 'REQUEST_PENDING'
         })
-        const todoWithId = { ...todo, id: state.lastEdit!.itemId }
+        const todoWithId = { ...lastEdit!.todo!, ...editedTodo }
         p.api.save(todoWithId)
             .then(updatedTodo => {
                 updateState(stateDraft => {
@@ -129,17 +174,24 @@ export const useTodoListSectionLogic = (p: Props) => {
             })
     }
 
+    const cancelEdit = () => {
+        updateState(stateDraft => {
+            stateDraft.lastEdit!.status = 'CANCELED'
+        })
+    }
+
     const beginCreate = () => {
         updateState(stateDraft => {
             stateDraft.lastCreate = { status: 'USER_CREATING' }
         })
     }
 
-    const finsihCreate = (newTodo: Todo) => {
+    const finishCreate = (newTodoProps: TodoEditableProps) => {
         updateState(stateDraft => {
             stateDraft.lastCreate!.status = 'REQUEST_PENDING'
         })
-        p.api.save(newTodo)
+        const fullTodo = { ...newTodoProps, createdAt: new Date() }
+        p.api.save(fullTodo)
             .then(newTodoFromServer => {
                 updateState(stateDraft => {
                     stateDraft.lastCreate!.status = 'REQUEST_SUCCEESS'
@@ -152,42 +204,50 @@ export const useTodoListSectionLogic = (p: Props) => {
                 })                
             })
     }
-    
-    const setSearchParams = (params: PagedListSearchParams<Todo>) => updateState(stateDraft => {
-        stateDraft.searchParams = params
-    })
 
-
-    const getCurrentTodos = () => {
-        const withoutNewOnes = state.lastFetch!.data!.data
-            .filter(todo => !state.changesSinceLastFetch.deleted.includes(todo.id))
-            .map(todo => {
-                const changedTodo = state.changesSinceLastFetch.updated[todo.id]
-                if(changedTodo !== undefined)
-                    return changedTodo
-                else
-                    return todo
-            })
-        
-        return [...withoutNewOnes, ...state.changesSinceLastFetch.new]
+    const cancelCreate = () => {
+        updateState(stateDraft => {
+            stateDraft.lastCreate!.status = 'CANCELED'
+        })
     }
 
-    const todos = {
-        data: getCurrentTodos(),
-        totalCount: state.lastFetch!.data!.totalCount + state.changesSinceLastFetch.new.length,
-        loadStatus: state.lastFetch!.status
+    const toggleTodoSelect = (todoId: number) => {        
+        updateState(stateDraft => {
+            if(stateDraft.selectedItems.includes(todoId))
+                stateDraft.selectedItems = stateDraft.selectedItems.filter(id => id !== todoId)
+            else
+                stateDraft.selectedItems.push(todoId)
+        })
+    }
+
+    const toggleSelectAll = () => {
+        updateState(stateDraft => {
+            if(stateDraft.selectedItems.length === 0)
+                stateDraft.selectedItems = todos.data!.map(t => t.id)
+            else
+                stateDraft.selectedItems = []
+        })
     }
 
     return { 
-        setSearchParams,
+        todos, 
+        lastDelete: state.lastDelete,
+        deleteSelected,
+        lastEdit,
+        lastCreate: state.lastCreate,
         todoListSearchParams: state.searchParams, 
+
+        toggleSelectAll,
+        toggleTodoSelect,
+        cancelCreate,
+        cancelEdit,
+        cancelDelete,
         delete: delete_, 
         confirmDelete, 
         fetchList, 
-        todos, 
         beginEdit, 
         finishEdit,
         beginCreate,
-        finsihCreate,
+        finsihCreate: finishCreate,
     }
 }

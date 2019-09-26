@@ -18,6 +18,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
+import { CircularProgress } from '@material-ui/core'
 import { PagedListSearchParams, RequestStatus } from '../utils';
 import { Link } from '../utils/components';
 import { TodoListItem } from '../logic/todoDataApi';
@@ -32,16 +33,16 @@ const todoPropsHeadCells = [
 
 interface EnhancedTableProps {
   classes: ReturnType<typeof useStyles>;
-  numSelected: number;
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   order: Order;
   orderBy: string;
-  rowCount: number;
+  checkBoxChecked: boolean
+  checkBoxIndeterminate: boolean
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
+  const { classes, onSelectAllClick, order, orderBy, onRequestSort } = props;
   const createSortHandler = (property: keyof TodoListItem) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
@@ -51,8 +52,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       <TableRow>
         <TableCell className={classes.checkBoxCell} padding="checkbox">
           <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={numSelected === rowCount}
+            indeterminate={props.checkBoxIndeterminate}
+            checked={props.checkBoxChecked}
             onChange={onSelectAllClick}
             inputProps={{ 'aria-label': 'select all desserts' }}
           />
@@ -115,7 +116,8 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 );
 
 interface EnhancedTableToolbarProps {
-  numSelected: number;
+  numSelected: number
+  onDelete: () => void
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -143,7 +145,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           <Tooltip title="Delete">
-            <IconButton aria-label="delete">
+            <IconButton onClick={props.onDelete} aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -202,20 +204,26 @@ const useStyles = makeStyles((theme: Theme) =>
     actionIcon: {
       fontSize: '1.2em',
     },
+    paginationContainer: {
+      height: '3.5em'
+    },
   }), { name: 'Table' },
 )
 
 export interface Props {
   todos: {
-    data?: TodoListItem[]
-    fetchStatus: RequestStatus
-    totalCount: number
+    data?: (TodoListItem & {isSelected: boolean})[]
+    fetchStatus?: RequestStatus
+    totalCount?: number
   }
   lastSearchParams: PagedListSearchParams<TodoListItem>
   
   onSearchParamsChange: (p: PagedListSearchParams<TodoListItem>) => void
   onEditClick: (todoId: number) => void
-  onDeleteClick: (todoIds: number[]) => void
+  onDeleteClick: (todoIds: number) => void
+  onDeleteSelectedClick: () => void
+  toggleItemSelect: (todoId: number) => void
+  toggleAllSelect: () => void
 }
 
 export default function EnhancedTable(p: Props) {
@@ -226,26 +234,9 @@ export default function EnhancedTable(p: Props) {
   const todos = p.todos.data
   const todosTotalCount = p.todos.totalCount
 
-  const [selectedIds, setSelectedIds] = React.useState<number[]>([])
-  console.log(selectedIds)
-
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => {
     const isDesc = orderBy === property && order === 'desc'
     p.onSearchParamsChange({...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property})
-  }
-
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked)
-      setSelectedIds(todos.map(n => n.id))
-    else
-      setSelectedIds([])
-  }
-
-  const handleRowClick = (id: number) => {
-    if(selectedIds.includes(id))
-      setSelectedIds(selectedIds.filter(id_ => id_ !== id))
-    else
-      setSelectedIds(selectedIds.concat(id))
   }
 
   const onEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
@@ -253,9 +244,9 @@ export default function EnhancedTable(p: Props) {
     p.onEditClick(todoId)
   }
 
-  const onDeleteClick = (event: React.MouseEvent<unknown>, todoId: number) => {
-    event.stopPropagation()
-    p.onDeleteClick([todoId])
+  const handleDeleteClick = (event: React.MouseEvent<unknown>, todoId: number) => {   
+    event.stopPropagation() 
+    p.onDeleteClick(todoId)
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -266,100 +257,120 @@ export default function EnhancedTable(p: Props) {
     p.onSearchParamsChange({ ...p.lastSearchParams, rowsPerPage: +event.target.value, page: 0 })
   }
 
+  const getTableBody = () => <TableBody>
+    {todos!.map((todo, index) => {
+      const labelId = `enhanced-table-checkbox-${index}`
+
+      return (
+        <TableRow
+          hover
+          onClick={() => p.toggleItemSelect(todo.id)}
+          role="checkbox"
+          aria-checked={todo.isSelected}
+          tabIndex={-1}
+          key={todo.id}
+          selected={todo.isSelected}
+        >
+          <TableCell padding="checkbox">
+            <Checkbox
+              checked={todo.isSelected}
+              inputProps={{ 'aria-labelledby': labelId }}
+            />
+          {/* <TableCell align="left">{row.id}</TableCell> */}
+          </TableCell>
+          <TableCell className={classes.nameCell} component="th" id={labelId} scope="row" padding="none">
+            {todo.name}
+          </TableCell>
+          <TableCell className={classes.createdAtCell} align="left">
+            {todo.createdAt.toLocaleDateString()} - {todo.createdAt.toLocaleTimeString()}
+          </TableCell>
+          <TableCell>
+            <Link href={`/todos/${todo.id}`}>
+              <Tooltip title="Details">
+                <IconButton className={classes.actionButton} size='small'>
+                  <DescriptionIcon className={classes.actionIcon} />
+                </IconButton>
+              </Tooltip>
+            </Link>
+            <Tooltip title="Edit">
+              <IconButton 
+                onClick={event => onEditClick(event, todo.id)} 
+                className={classes.actionButton} 
+                size='small'
+              >
+                <EditIcon className={classes.actionIcon} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton 
+                onClick={event => handleDeleteClick(event, todo.id)} 
+                className={classes.actionButton} 
+                size='small'
+              >
+                <DeleteIcon className={classes.actionIcon} />
+              </IconButton>
+            </Tooltip>
+          </TableCell>
+        </TableRow>
+        );
+      })}
+  </TableBody>
+
+  const getPagination = () => 
+    <TablePagination
+      rowsPerPageOptions={[5, 10, 25]}
+      component="div"
+      count={todosTotalCount!}
+      rowsPerPage={rowsPerPage}
+      page={page}
+      backIconButtonProps={{
+        'aria-label': 'previous page',
+      }}
+      nextIconButtonProps={{
+        'aria-label': 'next page',
+      }}
+      onChangePage={handleChangePage}
+      onChangeRowsPerPage={handleChangeRowsPerPage}
+    />
+
+  const fetched = p.todos.fetchStatus === 'REQUEST_SUCCEESS'
+  const fetching = p.todos.fetchStatus === 'REQUEST_PENDING'
+  const fetchError = p.todos.fetchStatus === 'REQUEST_FAILED'
+
+  const selectedTodosCount = todos ? todos.filter(t => t.isSelected).length : 0
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selectedIds.length} />
+        <EnhancedTableToolbar onDelete={p.onDeleteSelectedClick} numSelected={selectedTodosCount} />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
           >
+            {fetching &&
+              <div>
+                <CircularProgress />
+              </div>
+            }
+            {fetchError && <div>fetch error</div>}
             <EnhancedTableHead
               classes={classes}
-              numSelected={selectedIds.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
+              onSelectAllClick={p.toggleAllSelect}
               onRequestSort={handleRequestSort}
-              rowCount={todos.length}
+              checkBoxChecked={fetched ? (selectedTodosCount === todos!.length) : false}
+              checkBoxIndeterminate={
+                fetched ? (selectedTodosCount > 0 && selectedTodosCount < todos!.length) : false
+              }
             />
-            <TableBody>
-              {todos.map((todo, index) => {
-                const isItemSelected = selectedIds.includes(todo.id)
-                const labelId = `enhanced-table-checkbox-${index}`
-
-                return (
-                  <TableRow
-                    hover
-                    onClick={() => handleRowClick(todo.id)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={todo.id}
-                    selected={isItemSelected}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isItemSelected}
-                        inputProps={{ 'aria-labelledby': labelId }}
-                      />
-                    {/* <TableCell align="left">{row.id}</TableCell> */}
-                    </TableCell>
-                    <TableCell className={classes.nameCell} component="th" id={labelId} scope="row" padding="none">
-                      {todo.name}
-                    </TableCell>
-                    <TableCell className={classes.createdAtCell} align="left">
-                      {todo.createdAt.toLocaleDateString()} - {todo.createdAt.toLocaleTimeString()}
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/todos/${todo.id}`}>
-                        <Tooltip title="Details">
-                          <IconButton className={classes.actionButton} size='small'>
-                            <DescriptionIcon className={classes.actionIcon} />
-                          </IconButton>
-                        </Tooltip>
-                      </Link>
-                      <Tooltip title="Edit">
-                        <IconButton 
-                          onClick={event => onEditClick(event, todo.id)} 
-                          className={classes.actionButton} 
-                          size='small'
-                        >
-                          <EditIcon className={classes.actionIcon} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton 
-                          onClick={event => onDeleteClick(event, todo.id)} 
-                          className={classes.actionButton} 
-                          size='small'
-                        >
-                          <DeleteIcon className={classes.actionIcon} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                  );
-                })}
-            </TableBody>
+            {fetched && getTableBody()}
           </Table>
         </div>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={todoTotatCount}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          backIconButtonProps={{
-            'aria-label': 'previous page',
-          }}
-          nextIconButtonProps={{
-            'aria-label': 'next page',
-          }}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-        />
+        <div className={classes.paginationContainer}>
+          {fetched && getPagination()}
+        </div>
       </Paper>
     </div>
   );

@@ -6,7 +6,7 @@ export type TodoListItem = Omit<Todo, 'description'>
 export interface TodoDataApi {
     fetchList: (p: PagedListSearchParams<Todo>) => Promise<PagedList<Todo>>
     fetch: (todoId: number) => Promise<Todo>
-    save: (todo: Todo) => Promise<Todo>
+    save: (todo: Omit<Todo, 'id'>) => Promise<Todo>
     delete: (todoIds: number[]) => Promise<any>
 }
 
@@ -50,7 +50,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
             totalCount: entries.length,
         }
 
-        return resolvesAfter(1500, r)
+        return resolvesAfter(1000, r)
     }
 
     const fetch = (todoId: number) => {
@@ -58,9 +58,9 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
         return resolvesAfter<Todo>(500, JSON.parse(todo, todoJsonReviver)) // simulating slow fetch
     }
 
-    const save = (todo: Todo) => {
-        localStorage.setItem(`todos/${todo.id}`, JSON.stringify(todo))
-        return resolvesAfter<Todo>(500, todo)
+    const save = (todo: Omit<Todo, 'id'>) => {
+        localStorage.setItem(`todos/${(todo as any).id}`, JSON.stringify(todo))
+        return resolvesAfter<Todo>(500, todo as any)
     }
 
     const delete_ = (todoIds: number[]) => {

@@ -4,3 +4,8 @@ export interface Todo {
     description: string
     createdAt: Date
 }
+
+export interface TodoEditableProps {
+    name: string
+    description: string
+}

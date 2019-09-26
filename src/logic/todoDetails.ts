@@ -1,15 +1,14 @@
-import { Todo } from "./shared"
+import { Todo, TodoEditableProps } from "./shared"
 import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
 import { TodoDataApi } from "./todoDataApi";
-import { TodoFormValues } from "../view/TodoEditor";
 
 export interface TodoDetailsLogic {
     fetchTodo: () => void
     startEdit: () => void
     delete: () => void
-    finishEdit: (todo: TodoFormValues) => void
+    finishEdit: (todo: TodoEditableProps) => void
     cancelEdit: () => void
 
     editingStatus?: 'EDITING' | RequestStatus
@@ -110,7 +109,7 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
     const todo = state.lastTodoChange || (state.lastTodoFetch && state.lastTodoFetch.data && state.lastTodoFetch.data!)
     const todoFetchStatus = state.lastTodoFetch && state.lastTodoFetch.status
 
-    const finishEdit = (todoFormValues: TodoFormValues) => {
+    const finishEdit = (todoFormValues: TodoEditableProps) => {
         if(state.editingStatus !== 'EDITING')
             throw new Error()
         else 
