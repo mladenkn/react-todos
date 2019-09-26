@@ -2,7 +2,7 @@ import { Todo } from "./shared"
 import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
 import { useEffect } from "react"
-import { TodoDataApi } from "./todoLocalStorageDataApi";
+import { TodoDataApi } from "./todoDataApi";
 import { TodoFormValues } from "../view/TodoEditor";
 
 export interface TodoDetailsLogic {

@@ -18,12 +18,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { Todo } from '../logic/shared';
 import { PagedListSearchParams } from '../utils';
 import { Link } from '../utils/components';
-import { ButtonBase } from '@material-ui/core'
-
-export type TodoListItem = Omit<Todo, 'description'>
+import { TodoListItem } from '../logic/todoDataApi';
 
 type Order = 'asc' | 'desc'
 
@@ -52,7 +49,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        <TableCell className={classes.checkBoxCell} padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={numSelected === rowCount}
@@ -165,13 +162,15 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      marginTop: theme.spacing(3),
       display: 'inline-block',
     },
     paper: {
       marginBottom: theme.spacing(2),
     },
     table: {
+    },
+    checkBoxCell: {
+      width: '7em',
     },
     actionHeadCell: {
       paddingLeft: '2.1em'
@@ -204,13 +203,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: '1.2em',
     },
   }), { name: 'Table' },
-);
+)
 
 export interface Props {
   todos: TodoListItem[]
   todoTotatCount: number
   lastSearchParams: PagedListSearchParams<TodoListItem>
+  
   onSearchParamsChange: (p: PagedListSearchParams<TodoListItem>) => void
+  onEditClick: (todoId: number) => void
+  onDeleteClick: (todoIds: number[]) => void
 }
 
 export default function EnhancedTable(p: Props) {
@@ -242,12 +244,14 @@ export default function EnhancedTable(p: Props) {
       setSelectedIds(selectedIds.concat(id))
   }
 
-  const onEditClick = (event: React.MouseEvent<unknown>) => {
+  const onEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
     event.stopPropagation()
+    p.onEditClick(todoId)
   }
 
-  const onDeleteClick = (event: React.MouseEvent<unknown>) => {
+  const onDeleteClick = (event: React.MouseEvent<unknown>, todoId: number) => {
     event.stopPropagation()
+    p.onDeleteClick([todoId])
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -306,16 +310,30 @@ export default function EnhancedTable(p: Props) {
                     </TableCell>
                     <TableCell>
                       <Link href={`/todos/${todo.id}`}>
-                        <IconButton className={classes.actionButton} size='small'>
-                          <DescriptionIcon className={classes.actionIcon} />
-                        </IconButton>
+                        <Tooltip title="Details">
+                          <IconButton className={classes.actionButton} size='small'>
+                            <DescriptionIcon className={classes.actionIcon} />
+                          </IconButton>
+                        </Tooltip>
                       </Link>
-                      <IconButton onClick={onEditClick} className={classes.actionButton} size='small'>
-                        <EditIcon className={classes.actionIcon} />
-                      </IconButton>
-                      <IconButton onClick={onDeleteClick} className={classes.actionButton} size='small'>
-                        <DeleteIcon className={classes.actionIcon} />
-                      </IconButton>
+                      <Tooltip title="Edit">
+                        <IconButton 
+                          onClick={event => onEditClick(event, todo.id)} 
+                          className={classes.actionButton} 
+                          size='small'
+                        >
+                          <EditIcon className={classes.actionIcon} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton 
+                          onClick={event => onDeleteClick(event, todo.id)} 
+                          className={classes.actionButton} 
+                          size='small'
+                        >
+                          <DeleteIcon className={classes.actionIcon} />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                   );

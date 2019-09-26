@@ -1,8 +1,10 @@
 import { Todo } from "./shared";
 import { PagedListSearchParams } from "../utils";
 
+export type TodoListItem = Omit<Todo, 'description'>
+
 export interface TodoDataApi {
-    fetchList: (p: PagedListSearchParams<Todo>) => { data: Todo[], totalCount: number }
+    fetchList: (p: PagedListSearchParams<Todo>) => { data: TodoListItem[], totalCount: number }
     fetch: (todoId: string) => Promise<Todo>
     save: (todo: Todo) => Promise<Todo>
     delete: (todoId: string) => Promise<any>
@@ -24,7 +26,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
         const items = entries
             .filter(([key, value]) => key.startsWith('todos/'))
-            .map(([key, value]) => JSON.parse(value, todoJsonReviver) as Todo)
+            .map(([key, value]) => JSON.parse(value, todoJsonReviver) as TodoListItem)
             .sort((a, b) => {
                 if (p.orderBy === 'createdAt' && p.order === 'desc')
                     return b.createdAt.getTime() - a.createdAt.getTime()

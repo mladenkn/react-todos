@@ -1,14 +1,17 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
-import TodoTableExample, { TodoListItem } from './TodoTableExample'
-import { createTodoLocalStorageDataApi } from '../logic/todoLocalStorageDataApi';
+import TodoTableExample from './TodoTableExample'
+import { TodoListItem, TodoDataApi } from '../logic/todoDataApi';
 import { PagedListSearchParams } from '../utils';
+import { useTodoListSectionLogic } from '../logic/todoListSection';
 
 const useStyles = makeStyles({
-
+  root: {
+    padding: '1.5em'
+  },
 })
 
-export const TodoListPage = () => {
+export const TodoListPage = (p: {api: TodoDataApi}) => {
 
   const classes = useStyles()
 
@@ -19,19 +22,21 @@ export const TodoListPage = () => {
     rowsPerPage: 5,
   })
 
-  const api = createTodoLocalStorageDataApi()
-  const todoList = api.fetchList(searchParams)
+  const todoList = p.api.fetchList(searchParams)
+  const logic = useTodoListSectionLogic({api: p.api})
   
   console.log(searchParams)
   console.log(todoList)
 
   return (
-    <div>
+    <div className={classes.root}>
       <TodoTableExample 
         todos={todoList.data} 
         todoTotatCount={todoList.totalCount}
         lastSearchParams={searchParams}
         onSearchParamsChange={setSearchParams}
+        onDeleteClick={logic.delete}
+        onEditClick={() => {}}
       />
     </div>
   )
