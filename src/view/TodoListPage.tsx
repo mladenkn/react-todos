@@ -44,7 +44,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
           data: logic.todos.data,
           fetchStatus: fetchStatus,
           totalCount: logic.todos.totalCount
-        }} 
+        }}
         lastSearchParams={(logic.todoListSearchParams || initalSearchParams) as any}
         onSearchParamsChange={logic.fetchList}
         onDeleteClick={logic.delete}

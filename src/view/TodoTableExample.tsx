@@ -179,6 +179,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     tableWrapper: {
       overflowX: 'auto',
+      minHeight: '30em',
+      minWidth: '39em',
     },
     visuallyHidden: {
       border: 0,
@@ -206,6 +208,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     paginationContainer: {
       height: '3.5em'
+    },
+    circularProgressContainer: {
+      marginTop: '25%',
+      marginLeft: '40%',
+    },
+    circularProgress: {
+      width: '6em',
     },
   }), { name: 'Table' },
 )
@@ -338,6 +347,7 @@ export default function EnhancedTable(p: Props) {
   const fetchError = p.todos.fetchStatus === 'REQUEST_FAILED'
 
   const selectedTodosCount = todos ? todos.filter(t => t.isSelected).length : 0
+  const usePagination = p.todos && p.todos.totalCount && (p.todos.totalCount > 5)
 
   return (
     <div className={classes.root}>
@@ -348,12 +358,6 @@ export default function EnhancedTable(p: Props) {
             className={classes.table}
             aria-labelledby="tableTitle"
           >
-            {fetching &&
-              <div>
-                <CircularProgress />
-              </div>
-            }
-            {fetchError && <div>fetch error</div>}
             <EnhancedTableHead
               classes={classes}
               order={order}
@@ -367,9 +371,17 @@ export default function EnhancedTable(p: Props) {
             />
             {fetched && getTableBody()}
           </Table>
+          {fetching &&
+            <div className={classes.circularProgressContainer}>
+              <CircularProgress size={100} className={classes.circularProgress} />
+            </div>
+          }
+          {fetchError && 
+            <div>fetch error</div>
+          }
         </div>
         <div className={classes.paginationContainer}>
-          {fetched && getPagination()}
+          {fetched && usePagination && getPagination()}
         </div>
       </Paper>
     </div>
