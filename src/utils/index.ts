@@ -6,7 +6,6 @@ export enum AsyncOperationStatus {
 
 export interface FetchOf<TData> {
     data?: TData
-    // status: 'NOT_INITIATED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
     status: RequestStatus
 }
 
@@ -25,4 +24,9 @@ export interface PagedListSearchParams<T> {
     orderBy: keyof T
     page: number
     rowsPerPage: number
+}
+
+export interface PagedList<T> {
+    data: T[]
+    totalCount: number
 }

@@ -18,7 +18,7 @@ const usePageStyles = makeStyles({
   }
 })
 
-export const TodoDetailsPage = (p: {todoId: string, api: TodoDataApi}) => {
+export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
   const classes = usePageStyles()
   
   const logic = useTodoDetailsLogic({

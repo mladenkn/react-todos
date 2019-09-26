@@ -18,7 +18,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { PagedListSearchParams } from '../utils';
+import { PagedListSearchParams, RequestStatus } from '../utils';
 import { Link } from '../utils/components';
 import { TodoListItem } from '../logic/todoDataApi';
 
@@ -206,8 +206,11 @@ const useStyles = makeStyles((theme: Theme) =>
 )
 
 export interface Props {
-  todos: TodoListItem[]
-  todoTotatCount: number
+  todos: {
+    data?: TodoListItem[]
+    fetchStatus: RequestStatus
+    totalCount: number
+  }
   lastSearchParams: PagedListSearchParams<TodoListItem>
   
   onSearchParamsChange: (p: PagedListSearchParams<TodoListItem>) => void
@@ -220,7 +223,8 @@ export default function EnhancedTable(p: Props) {
   const classes = useStyles()
 
   const { order, orderBy, page, rowsPerPage } = p.lastSearchParams
-  const { todos: todos, todoTotatCount } = p
+  const todos = p.todos.data
+  const todosTotalCount = p.todos.totalCount
 
   const [selectedIds, setSelectedIds] = React.useState<number[]>([])
   console.log(selectedIds)

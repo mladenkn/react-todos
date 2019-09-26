@@ -33,7 +33,7 @@ export const todoDetailsinitialState: TodoDetailsState = {
 
 interface TodoDetailsProps {
     initialState?: TodoDetailsState,
-    todoId: string,
+    todoId: number,
     todoApi: TodoDataApi,
     noInitialFetch?: boolean
     onDelete: () => void
@@ -93,7 +93,7 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
         updateState(s => {
             s.deleteStatus = 'REQUEST_PENDING'
         })
-        p.todoApi.delete(p.todoId)
+        p.todoApi.delete([p.todoId])
             .then(() => {
                 updateState(s => {
                     s.deleteStatus = 'REQUEST_SUCCEESS'
