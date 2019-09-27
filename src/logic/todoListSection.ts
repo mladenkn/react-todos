@@ -8,11 +8,7 @@ interface State {
     lastFetch?: FetchOf<PagedList<Todo>>
     searchParams?: PagedListSearchParams<Todo>
     selectedItems: number[]
-    changesSinceLastFetch: {
-        deleted: number[]
-        new: Todo[]
-        updated: Record<number, Todo>
-    }
+    deletedIdsSinceLastFetch: number[]
     lastDelete?: {
         status: 'UNCONFIRMED' | 'CANCELED' | RequestStatus
     }
@@ -27,16 +23,13 @@ interface State {
 
 interface Props {
     api: TodoDataApi
+    debounceFetchBy?: number
     initialState?: State
 }
 
 const zeroState: State = {
     selectedItems: [],
-    changesSinceLastFetch: {
-        deleted: [],
-        new: [],
-        updated: {},
-    },
+    deletedIdsSinceLastFetch: [],
 }
 
 export const useTodoListSectionLogic = (p: Props) => {
@@ -46,30 +39,17 @@ export const useTodoListSectionLogic = (p: Props) => {
 
 
     const getCurrentTodos = () => {
-
         if(!state.lastFetch || !state.lastFetch.data)
             return undefined
-
-        const withoutNewOnes = state.lastFetch!.data!.data
-            .filter(todo => !state.changesSinceLastFetch.deleted.includes(todo.id))
-            .map(todo => {
-                const changedTodo = state.changesSinceLastFetch.updated[todo.id]
-                if(changedTodo !== undefined)
-                    return changedTodo
-                else
-                    return todo
-            })
-        
-        return [...withoutNewOnes, ...state.changesSinceLastFetch.new]
+        return state.lastFetch!.data!.data
+            .filter(todo => !state.deletedIdsSinceLastFetch.includes(todo.id))
             .map(t => {
                 const isSelected = state.selectedItems.includes(t.id)
                 return { ...t, isSelected }
             })
     }
 
-    const totalCount = (state.lastFetch && state.lastFetch!.data) ?
-        state.lastFetch!.data!.totalCount + state.changesSinceLastFetch.new.length : 
-        undefined
+    const totalCount = (state.lastFetch && state.lastFetch!.data) && state.lastFetch!.data!.totalCount
 
     const todos = {
         data: getCurrentTodos(),
@@ -112,7 +92,7 @@ export const useTodoListSectionLogic = (p: Props) => {
                 updateState(stateDraft => {
                     stateDraft.lastDelete!.status = 'REQUEST_SUCCEESS'
                     stateDraft.selectedItems.forEach(todoId => {
-                        stateDraft.changesSinceLastFetch.deleted.push(todoId)
+                        stateDraft.deletedIdsSinceLastFetch.push(todoId)
                     })
                 })
             })
@@ -140,7 +120,7 @@ export const useTodoListSectionLogic = (p: Props) => {
                         data: response,
                         status: 'REQUEST_SUCCEESS'
                     }
-                    stateDraft.changesSinceLastFetch = zeroState.changesSinceLastFetch
+                    stateDraft.deletedIdsSinceLastFetch = []
                 })
             })
             .catch(() => {
@@ -148,7 +128,7 @@ export const useTodoListSectionLogic = (p: Props) => {
                     stateDraft.lastFetch!.status = 'REQUEST_FAILED'
                 })
             })
-    }, 500)
+    }, p.debounceFetchBy || 500)
 
     const fetchList = (params: PagedListSearchParams<Todo>) => {
         updateState(stateDraft => {
@@ -171,11 +151,14 @@ export const useTodoListSectionLogic = (p: Props) => {
             stateDraft.lastEdit!.status = 'REQUEST_PENDING'
         })
         const todoWithId = { ...lastEdit!.todo!, ...editedTodo }
-        p.api.save(todoWithId)
-            .then(updatedTodo => {
+        p.api.save(todoWithId, state.searchParams)
+            .then(response => {
                 updateState(stateDraft => {
                     stateDraft.lastEdit!.status = 'REQUEST_SUCCEESS'
-                    stateDraft.changesSinceLastFetch.updated[updatedTodo.id] = updatedTodo
+                    stateDraft.lastFetch = {
+                        data: response.list!,
+                        status: 'REQUEST_SUCCEESS'
+                    }
                 })
             })
             .catch(() => {
@@ -202,11 +185,14 @@ export const useTodoListSectionLogic = (p: Props) => {
             stateDraft.lastCreate!.status = 'REQUEST_PENDING'
         })
         const fullTodo = { ...newTodoProps, createdAt: new Date() }
-        p.api.save(fullTodo)
-            .then(newTodoFromServer => {
+        p.api.save(fullTodo, state.searchParams)
+            .then(response => {
                 updateState(stateDraft => {
                     stateDraft.lastCreate!.status = 'REQUEST_SUCCEESS'
-                    stateDraft.changesSinceLastFetch.new.push(newTodoFromServer)
+                    stateDraft.lastFetch = {
+                        data: response.list,
+                        status: 'REQUEST_SUCCEESS',
+                    }
                 })
             })
             .catch(() => {
@@ -262,6 +248,6 @@ export const useTodoListSectionLogic = (p: Props) => {
         beginEdit, 
         finishEdit,
         beginCreate,
-        finsihCreate: finishCreate,
+        finishCreate,
     }
 }

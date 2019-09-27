@@ -69,9 +69,9 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
             s.editingStatus = 'REQUEST_PENDING'
         })
         p.todoApi.save(todo)
-            .then(updatedTodo => {
+            .then(response => {
                 updateState(s => {
-                    s.lastTodoChange = updatedTodo
+                    s.lastTodoChange = response.todo
                     s.editingStatus = 'REQUEST_SUCCEESS'
                 })
             })

@@ -3,10 +3,15 @@ import { PagedListSearchParams, PagedList } from "../utils";
 
 export type TodoListItem = Omit<Todo, 'description'>
 
+interface SaveResponse {
+    todo: Todo, 
+    list?: PagedList<Todo>
+}
+
 export interface TodoDataApi {
     fetchList: (p: PagedListSearchParams<Todo>) => Promise<PagedList<Todo>>
     fetch: (todoId: number) => Promise<Todo>
-    save: (todo: Omit<Todo, 'id'>) => Promise<Todo>
+    save: (todo: Omit<Todo, 'id'>, listParams?: PagedListSearchParams<Todo>) => Promise<SaveResponse>
     delete: (todoIds: number[]) => Promise<any>
 }
 
@@ -14,8 +19,14 @@ const resolvesAfter = <T> (milis: number, data?: T) => {
     return new Promise<T>(resolve => setTimeout(() => resolve(data), milis))    
 }
 
-const todoJsonReviver = (key: string, value: any) => 
-    key === 'createdAt' ? new Date(value) : value
+const todoJsonReviver = (key: string, value: any) => {
+    if (key === 'createdAt') 
+        return new Date(value) 
+    else if (key === 'id')
+        return +value
+    else
+        return value;
+}
 
 const doesTodoMatchSearchQuery = (searchQuery?: string) => (todo: Todo) => {
     if(!searchQuery)
@@ -32,14 +43,18 @@ const doesTodoMatchSearchQuery = (searchQuery?: string) => (todo: Todo) => {
 
 export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
-    const fetchList = (p: PagedListSearchParams<Todo>) => {
-        const entries = Object.entries(localStorage)            
+    const getAllTodos = () => Object.entries(localStorage)
+        .filter(([key, value]) => key.startsWith('todos/'))
+        .map(([key, value]) => JSON.parse(value, todoJsonReviver) as Todo)
+    
+    let nextTodoId = getAllTodos().sort((a, b) => b.id - a.id)[0].id + 1
+
+    const fetchList = (p: PagedListSearchParams<Todo>) => {     
         const pageStart = p.rowsPerPage * p.page
         const pageEnd = pageStart + p.rowsPerPage
+        const allTodos = getAllTodos()
 
-        const items = entries
-            .filter(([key, value]) => key.startsWith('todos/'))
-            .map(([key, value]) => JSON.parse(value, todoJsonReviver) as Todo)
+        const items = allTodos
             .sort((a, b) => {
                 if (p.orderBy === 'createdAt' && p.order === 'desc')
                     return b.createdAt.getTime() - a.createdAt.getTime()
@@ -59,22 +74,28 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
             .filter(doesTodoMatchSearchQuery(p.searchQuery))
             .slice(pageStart, pageEnd)
 
-        const r = {
+        return {
             data: items,
-            totalCount: entries.length,
+            totalCount: allTodos.length,
         }
-
-        return resolvesAfter(300, r)
     }
+
+    const promiseReturningFetchList = (p: PagedListSearchParams<Todo>) => resolvesAfter(500, fetchList(p))
 
     const fetch = (todoId: number) => {
         const todo = localStorage.getItem(`todos/${todoId}`)!
         return resolvesAfter<Todo>(500, JSON.parse(todo, todoJsonReviver)) // simulating slow fetch
     }
 
-    const save = (todo: Omit<Todo, 'id'>) => {
-        localStorage.setItem(`todos/${(todo as any).id}`, JSON.stringify(todo))
-        return resolvesAfter<Todo>(500, todo as any)
+    const save = (todo: Omit<Todo, 'id'>, listParams?: PagedListSearchParams<Todo>) => {
+        const withId = { ...todo, id: nextTodoId }
+        nextTodoId++
+        localStorage.setItem(`todos/${withId.id}`, JSON.stringify(withId))
+        const response = {
+            todo: withId,
+            list: listParams && fetchList(listParams!)
+        }
+        return resolvesAfter<SaveResponse>(300, response)
     }
 
     const delete_ = (todoIds: number[]) => {
@@ -83,32 +104,5 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
         return resolvesAfter(500);
     }
 
-    return { fetchList, fetch, save, delete: delete_ }
-} 
-
-// function stableSort<T>(array: T[], cmp: (a: T, b: T) => number) {
-//   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = cmp(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
-//   return stabilizedThis.map(el => el[0]);
-// }
-
-// function desc<T>(a: T, b: T, orderBy: keyof T) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getSorting<K extends keyof any>(
-//   order: 'asc' | 'desc',
-//   orderBy: K,
-// ): (a: { [key in K]: number | string }, b: { [key in K]: number | string }) => number {
-//   return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
-// }
+    return { fetchList: promiseReturningFetchList, fetch, save, delete: delete_ }
+}

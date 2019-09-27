@@ -52,6 +52,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
         onEditClick={logic.beginEdit}
         toggleItemSelect={logic.toggleTodoSelect}
         toggleAllSelect={logic.toggleSelectAll}
+        onTodoAddClick={logic.beginCreate}
       />
       {logic.isEditing &&
         <Dialog open={true} onClose={logic.cancelEdit}>
@@ -68,7 +69,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
           <TodoEditor 
             className={classes.todoEditor}
             onCancel={logic.cancelCreate}
-            onSubmit={logic.finsihCreate}
+            onSubmit={logic.finishCreate}
           />
         </Dialog>
       }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import clsx from 'clsx';
 import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -14,6 +14,7 @@ import { Paper, Checkbox, IconButton, Tooltip, CircularProgress, TextField } fro
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
+import PostAddIcon from '@material-ui/icons/PostAdd';
 import { PagedListSearchParams, RequestStatus } from '../utils';
 import { Link } from '../utils/components';
 import { TodoListItem } from '../logic/todoDataApi';
@@ -120,6 +121,7 @@ interface EnhancedTableToolbarProps {
   onDelete: () => void
   searchQuery?: string
   onSearchQueryChange: (q: string) => void
+  onTodoAddClick: () => void
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -151,13 +153,18 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             </IconButton>
           </Tooltip>
         ) : (
-          <TextField 
-            className={classes.searchField} 
-            label='Search' 
-            type='search' 
-            value={props.searchQuery}
-            onChange={e => props.onSearchQueryChange(e.target.value)}
-          />
+          <Fragment>
+            <TextField 
+              className={classes.searchField} 
+              label='Search' 
+              type='search' 
+              value={props.searchQuery}
+              onChange={e => props.onSearchQueryChange(e.target.value)}
+            />
+            <IconButton onClick={props.onTodoAddClick}>
+              <PostAddIcon />
+            </IconButton>
+          </Fragment>
         )}
       </div>
     </Toolbar>
@@ -236,6 +243,7 @@ export interface Props {
   onDeleteSelectedClick: () => void
   toggleItemSelect: (todoId: number) => void
   toggleAllSelect: () => void
+  onTodoAddClick: () => void
 }
 
 export default function EnhancedTable(p: Props) {
@@ -364,6 +372,7 @@ export default function EnhancedTable(p: Props) {
           numSelected={selectedTodosCount} 
           searchQuery={searchQuery}
           onSearchQueryChange={handleSearchQueryChange}
+          onTodoAddClick={p.onTodoAddClick}
         />
         <div className={classes.tableWrapper}>
           <Table
