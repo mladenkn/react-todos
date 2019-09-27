@@ -70,7 +70,9 @@ export const TodoDetails = (p: TodoDetailsProps) => {
           </div>
           <div className={classes.prop}>
             <Typography className={classes.propLabel}>Created at:</Typography>
-            <Typography className={classes.propValue}>{p.todo.createdAt.toString()}</Typography>
+            <Typography className={classes.propValue}>
+              {p.todo.createdAt.toLocaleDateString()} - {p.todo.createdAt.toLocaleTimeString()}
+            </Typography>
           </div>
         </div>
 

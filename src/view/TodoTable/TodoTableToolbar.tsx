@@ -13,6 +13,7 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       paddingRight: theme.spacing(1),
       marginBottom: '0.5em',
       paddingTop: '0.5em',
+      height: '5em',
     },
     highlight:{
       color: theme.palette.secondary.main,
@@ -22,7 +23,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       marginLeft: '13em',      
     },
     titleContainer: {
-      marginLeft: '1em'
     },
     selectedCount: {
       fontSize: '2em',
