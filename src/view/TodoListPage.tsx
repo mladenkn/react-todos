@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
-import TodoTableExample from './TodoTableExample'
+import TodoTableExample from './TodoTable'
 import { TodoListItem, TodoDataApi } from '../logic/todoDataApi';
 import { useTodoListSectionLogic } from '../logic/todoListSection';
 import { RequestStatus, PagedListSearchParams } from '../utils';

@@ -1,175 +1,19 @@
-import React, { Fragment } from 'react';
-import clsx from 'clsx';
-import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core/styles';
+import React from 'react';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import { Paper, Checkbox, IconButton, Tooltip, CircularProgress, TextField } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
-import PostAddIcon from '@material-ui/icons/PostAdd';
-import { PagedListSearchParams, RequestStatus } from '../utils';
-import { Link } from '../utils/components';
-import { TodoListItem } from '../logic/todoDataApi';
-
-type Order = 'asc' | 'desc'
-
-const todoPropsHeadCells = [
-  // { id: 'id', disablePadding: true, label: 'Id' },
-  { id: 'name' as keyof TodoListItem, disablePadding: true, label: 'Name' },
-  { id: 'createdAt' as keyof TodoListItem, disablePadding: false, label: 'Created at' },
-]
-
-interface EnhancedTableProps {
-  classes: ReturnType<typeof useStyles>;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-  order: Order;
-  orderBy: string;
-  checkBoxChecked: boolean
-  checkBoxIndeterminate: boolean
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const { classes, onSelectAllClick, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property: keyof TodoListItem) => (event: React.MouseEvent<unknown>) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell className={classes.checkBoxCell} padding="checkbox">
-          <Checkbox
-            indeterminate={props.checkBoxIndeterminate}
-            checked={props.checkBoxChecked}
-            onChange={onSelectAllClick}
-            inputProps={{ 'aria-label': 'select all desserts' }}
-          />
-        </TableCell>
-        {todoPropsHeadCells.map(cell => (
-          <TableCell
-            key={cell.id}
-            align='left'
-            padding={cell.disablePadding ? 'none' : 'default'}
-            sortDirection={orderBy === cell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === cell.id}
-              direction={order}
-              onClick={createSortHandler(cell.id)}
-            >
-              {cell.label}
-              {orderBy === cell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </span>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-        <TableCell className={classes.actionHeadCell}>
-          Actions
-        </TableCell>
-      </TableRow>
-    </TableHead>
-  );
-}
-
-const useToolbarStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(1),
-      marginBottom: '0.5em',
-      paddingTop: '0.5em',
-    },
-    highlight:{
-      color: theme.palette.secondary.main,
-      backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-    },
-    actions: {
-      marginLeft: '13em',      
-    },
-    titleContainer: {
-      marginLeft: '1em'
-    },
-    selectedCount: {
-      fontSize: '2em',
-    },
-    title: {
-      fontSize: '3em',
-    },
-    searchField: {
-      width: '12em',
-    },
-    deleteAction: {
-      marginLeft: '6.4em',
-    },
-  }), { name: 'Toolbar'},
-);
-
-interface EnhancedTableToolbarProps {
-  numSelected: number
-  onDelete: () => void
-  searchQuery?: string
-  onSearchQueryChange: (q: string) => void
-  onTodoAddClick: () => void
-}
-
-const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
-  const classes = useToolbarStyles();
-  const { numSelected } = props;
- 
-  return (
-    <Toolbar
-      className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
-      <div className={classes.titleContainer}>
-        {numSelected > 0 ? (
-          <Typography className={classes.selectedCount} color="inherit" variant="subtitle1">
-            {numSelected} selected
-          </Typography>
-        ) : (
-          <Typography className={classes.title} color='primary' variant="h6" id="tableTitle">
-            Todos
-          </Typography>
-        )}
-      </div>
-      <div className={classes.actions}>
-        {numSelected > 0 ? (
-          <Tooltip title="Delete">
-            <IconButton className={classes.deleteAction} onClick={props.onDelete} aria-label="delete">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Fragment>
-            <TextField 
-              className={classes.searchField} 
-              label='Search' 
-              type='search' 
-              value={props.searchQuery}
-              onChange={e => props.onSearchQueryChange(e.target.value)}
-            />
-            <IconButton onClick={props.onTodoAddClick}>
-              <PostAddIcon />
-            </IconButton>
-          </Fragment>
-        )}
-      </div>
-    </Toolbar>
-  );
-};
+import { PagedListSearchParams, RequestStatus } from '../../utils';
+import { Link } from '../../utils/components';
+import { TodoListItem } from '../../logic/todoDataApi';
+import { TodoTableHead } from './TodoTableHead';
+import { TodoTableToolbar } from './TodoTableToolbar';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -181,27 +25,10 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     table: {
     },
-    checkBoxCell: {
-      width: '7em',
-    },
-    actionHeadCell: {
-      paddingLeft: '2.1em'
-    },
     tableWrapper: {
       overflowX: 'auto',
       minHeight: '26em',
       minWidth: '38em',
-    },
-    visuallyHidden: {
-      border: 0,
-      clip: 'rect(0 0 0 0)',
-      height: 1,
-      margin: -1,
-      overflow: 'hidden',
-      padding: 0,
-      position: 'absolute',
-      top: 20,
-      width: 1,
     },
     nameCell: {
       width: '10em'
@@ -246,7 +73,7 @@ export interface Props {
   onTodoAddClick: () => void
 }
 
-export default function EnhancedTable(p: Props) {
+export default function TodoTable(p: Props) {
   
   const classes = useStyles()
 
@@ -284,7 +111,6 @@ export default function EnhancedTable(p: Props) {
   const getTableBody = () => <TableBody>
     {todos!.map((todo, index) => {
       const labelId = `enhanced-table-checkbox-${index}`
-
       return (
         <TableRow
           hover
@@ -367,7 +193,7 @@ export default function EnhancedTable(p: Props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar 
+        <TodoTableToolbar 
           onDelete={p.onDeleteSelectedClick} 
           numSelected={selectedTodosCount} 
           searchQuery={searchQuery}
@@ -379,8 +205,7 @@ export default function EnhancedTable(p: Props) {
             className={classes.table}
             aria-labelledby="tableTitle"
           >
-            <EnhancedTableHead
-              classes={classes}
+            <TodoTableHead
               order={order}
               orderBy={orderBy}
               onSelectAllClick={p.toggleAllSelect}
@@ -406,5 +231,5 @@ export default function EnhancedTable(p: Props) {
         </div>
       </Paper>
     </div>
-  );
+  )
 }
