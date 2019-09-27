@@ -6,6 +6,7 @@ import { TodoDetails } from "./TodoDetails"
 import { TodoEditor } from "./TodoEditor"
 import { TodoDataApi } from "../logic/todoDataApi"
 import { useGoBack } from "../utils"
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog"
 
 
 const usePageStyles = makeStyles({
@@ -23,12 +24,12 @@ export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
   const classes = usePageStyles()
   
   const goBack = useGoBack()
+  const logic = useTodoDetailsLogic({ todoId: p.todoId, api: p.api })
 
-  const logic = useTodoDetailsLogic({
-    todoId: p.todoId,
-    todoApi: p.api,
-    onDelete: goBack
-  })
+  useEffect(() => {
+    if(logic.lastDeleteStatus === 'REQUEST_SUCCEESS')
+      goBack()
+  }, [logic.lastDeleteStatus])
 
   useEffect(() => {
     logic.fetchTodo()
@@ -46,12 +47,17 @@ export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
         />
       </Dialog>
     }
+    {logic.lastDeleteStatus === 'UNCONFIRMED' && 
+      <Dialog open={true} onClose={logic.cancelDelete}>
+        <ConfirmDeleteDialog itemsCount={1} onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />
+      </Dialog>
+    }
       <TodoDetails 
         todo={logic.todo!} 
         todoFetchStatus={logic.todoFetchStatus}
         className={classes.root} 
         startEdit={logic.startEdit} 
-        delete={logic.delete} 
+        delete={logic.beginDelete} 
         onGoBack={goBack}
       />
     </Fragment>

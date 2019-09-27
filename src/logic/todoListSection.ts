@@ -3,7 +3,6 @@ import { TodoDataApi } from "./todoDataApi"
 import { useImmer } from "use-immer"
 import { Todo, TodoEditableProps } from "./shared"
 import { debounce } from 'ts-debounce'
-import { useTodoPostEffect } from "./todoEffects"
 
 interface State {
     lastFetch?: FetchOf<PagedList<Todo>>

@@ -4,16 +4,20 @@ import { useImmer } from "use-immer";
 import { TodoDataApi } from "./todoDataApi";
 
 export interface TodoDetailsLogic {
-    fetchTodo: () => void
-    startEdit: () => void
-    delete: () => void
-    finishEdit: (todo: TodoEditableProps) => void
-    cancelEdit: () => void
-
     editingStatus?: 'EDITING' | RequestStatus
     todoFetchStatus?: RequestStatus
+    lastDeleteStatus?: 'UNCONFIRMED' | 'CANCELED' | RequestStatus
 
     todo?: Todo
+
+    fetchTodo: () => void
+    startEdit: () => void
+    finishEdit: (todo: TodoEditableProps) => void
+    cancelEdit: () => void
+    
+    beginDelete: () => void
+    confirmDelete: () => void
+    cancelDelete: () => void
 }
 
 type TodoDetailsState = {
@@ -21,6 +25,7 @@ type TodoDetailsState = {
     editingStatus?: 'EDITING' | RequestStatus,
     deleteStatus?: RequestStatus
     lastTodoChange?: Todo
+    lastDeleteStatus?: 'UNCONFIRMED' | 'CANCELED' | RequestStatus
 }
 
 export const todoDetailsinitialState: TodoDetailsState = {
@@ -32,8 +37,7 @@ export const todoDetailsinitialState: TodoDetailsState = {
 interface TodoDetailsProps {
     initialState?: TodoDetailsState,
     todoId: number,
-    todoApi: TodoDataApi,
-    onDelete: () => void
+    api: TodoDataApi
 }
 
 export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
@@ -44,7 +48,7 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
         updateState(s => {
             s.lastTodoFetch = { data: undefined, status: 'REQUEST_PENDING' }
         })
-        p.todoApi.fetch(p.todoId)
+        p.api.fetch(p.todoId)
             .then(todo => {
                 updateState(s => {
                     s.lastTodoFetch = { data: todo, status: 'REQUEST_SUCCEESS' }
@@ -61,7 +65,7 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
         updateState(s => {
             s.editingStatus = 'REQUEST_PENDING'
         })
-        p.todoApi.save(todo)
+        p.api.save(todo)
             .then(response => {
                 updateState(s => {
                     s.lastTodoChange = response.todo
@@ -81,22 +85,33 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
         })
     }
 
-    const delete_ = () => {
-        updateState(s => {
-            s.deleteStatus = 'REQUEST_PENDING'
+    const beginDelete = () => {
+        updateState(stateDraft => {
+            stateDraft.lastDeleteStatus = 'UNCONFIRMED'
         })
-        p.todoApi.delete([p.todoId])
+    }
+
+    const confirmDelete = () => {
+        updateState(stateDraft => {
+            stateDraft.lastDeleteStatus = 'REQUEST_PENDING';
+        })
+        p.api.delete([p.todoId])
             .then(() => {
-                updateState(s => {
-                    s.deleteStatus = 'REQUEST_SUCCEESS'
-                    p.onDelete()
+                updateState(stateDraft => {
+                    stateDraft.lastDeleteStatus = 'REQUEST_SUCCEESS'
                 })
             })
             .catch(() => {
-                updateState(s => {
-                    s.deleteStatus = 'REQUEST_FAILED'
+                updateState(stateDraft => {
+                    stateDraft.lastDeleteStatus = 'REQUEST_FAILED'
                 })
             })
+    }
+
+    const cancelDelete = () => {
+        updateState(stateDraft => {
+            stateDraft.lastDeleteStatus = 'CANCELED'
+        })
     }
 
     const todo = state.lastTodoChange || (state.lastTodoFetch && state.lastTodoFetch.data && state.lastTodoFetch.data!)
@@ -122,8 +137,12 @@ export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
         todo,
         todoFetchStatus,
         editingStatus: state.editingStatus,
+        lastDeleteStatus: state.lastDeleteStatus,
+        
         startEdit, 
-        delete: delete_, 
+        beginDelete, 
+        confirmDelete,
+        cancelDelete,
         finishEdit, 
         cancelEdit, 
         fetchTodo 
