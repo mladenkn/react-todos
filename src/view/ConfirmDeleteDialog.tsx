@@ -4,17 +4,14 @@ import { Typography, Button } from "@material-ui/core"
 
 const useConfirmDeleteDialogStyles = makeStyles({
   root: {
-    padding: '0.5em',
-    width: '9.5em',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    padding: '0.6em 0.5em 0.5em',
   },
   actions: {
     display: 'flex',
-    marginTop: '1em',
-    width: '100%',
+    marginTop: '0.55em',
+    width: '9em',
     justifyContent: 'space-between',
+    marginLeft: 'auto',
   },
 })
 

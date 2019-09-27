@@ -2,10 +2,6 @@ import faker from 'faker'
 import { __RouterContext as RouterContext } from 'react-router'
 import { useContext } from 'react';
 
-export enum AsyncOperationStatus {
-    Processing='Processing', Succeeded='Succeeded', Failed='Failed'
-}
-
 export interface FetchOf<TData> {
     data?: TData
     status: RequestStatus

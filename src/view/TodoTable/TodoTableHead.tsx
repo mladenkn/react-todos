@@ -4,17 +4,14 @@ import { TableRow, Checkbox, TableHead, TableCell, TableSortLabel } from "@mater
 import React from "react";
 
 const todoPropsHeadCells = [
-  // { id: 'id', disablePadding: true, label: 'Id' },
   { id: 'name' as keyof TodoListItem, disablePadding: true, label: 'Name' },
   { id: 'createdAt' as keyof TodoListItem, disablePadding: false, label: 'Created at' },
 ]
 
-type Order = 'asc' | 'desc'
-
 interface Props {
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-  order: Order;
+  order: 'asc' | 'desc';
   orderBy: string;
   checkBoxChecked: boolean
   checkBoxIndeterminate: boolean
