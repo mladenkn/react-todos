@@ -236,6 +236,7 @@ export const useTodoListSectionLogic = (p: Props) => {
         isEditing,
         isCreating,
         shouldConfirmDelete,
+        selectedItems: state.selectedItems,
 
         toggleSelectAll,
         toggleTodoSelect,

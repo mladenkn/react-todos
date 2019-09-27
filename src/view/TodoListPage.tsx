@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import TodoTableExample from './TodoTable'
 import { TodoListItem, TodoDataApi } from '../logic/todoDataApi';
 import { useTodoListSectionLogic } from '../logic/todoListSection';
 import { RequestStatus, PagedListSearchParams } from '../utils';
-import { Dialog, Typography, Button } from '@material-ui/core';
+import { Dialog } from '@material-ui/core';
 import { TodoEditor } from './TodoEditor';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 const useStyles = makeStyles({
   root: {
@@ -75,38 +76,13 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
       }
       {logic.shouldConfirmDelete && 
         <Dialog open={true} onClose={logic.cancelDelete}>
-          <ConfirmDeleteDialog onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />
+          <ConfirmDeleteDialog 
+            itemsCount={logic.selectedItems.length}
+            onConfirm={logic.confirmDelete} 
+            onCancel={logic.cancelDelete} 
+          />
         </Dialog>
       }
     </div>
-  )
-}
-
-const useConfirmDeleteDialogStyles = makeStyles({
-  root: {
-    padding: '0.5em',
-    width: '9.5em',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  actions: {
-    display: 'flex',
-    marginTop: '1em',
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-})
-
-const ConfirmDeleteDialog = (p: {onConfirm: () => void, onCancel: () => void}) => {
-  const classes = useConfirmDeleteDialogStyles()
-  return (
-      <div className={classes.root}>
-        <Typography>Are you sure?</Typography>
-        <div className={classes.actions}>
-          <Button size='small' onClick={p.onCancel} variant='outlined' color='secondary'>Cancel</Button>
-          <Button size='small' onClick={p.onConfirm} variant='outlined' color='primary'>OK</Button>
-        </div>
-      </div>
   )
 }

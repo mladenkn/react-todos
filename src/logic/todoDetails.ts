@@ -1,7 +1,6 @@
 import { Todo, TodoEditableProps } from "./shared"
 import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
-import { useEffect } from "react"
 import { TodoDataApi } from "./todoDataApi";
 
 export interface TodoDetailsLogic {
@@ -34,18 +33,12 @@ interface TodoDetailsProps {
     initialState?: TodoDetailsState,
     todoId: number,
     todoApi: TodoDataApi,
-    noInitialFetch?: boolean
     onDelete: () => void
 }
 
 export const useTodoDetailsLogic = (p: TodoDetailsProps): TodoDetailsLogic => {
 
     const [state, updateState] = useImmer<TodoDetailsState>(p.initialState || todoDetailsinitialState)
-
-    useEffect(() => {
-        if(!p.noInitialFetch)
-            fetchTodo()
-    }, [])
 
     const fetchTodo = () => {
         updateState(s => {
