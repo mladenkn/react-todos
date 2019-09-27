@@ -14,7 +14,6 @@ import { Paper, Checkbox, IconButton, Tooltip, CircularProgress, TextField } fro
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
-import FilterListIcon from '@material-ui/icons/FilterList';
 import { PagedListSearchParams, RequestStatus } from '../utils';
 import { Link } from '../utils/components';
 import { TodoListItem } from '../logic/todoDataApi';
@@ -89,18 +88,12 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(1),
       marginBottom: '0.5em',
-      paddingTop: '1em',
+      paddingTop: '0.5em',
     },
-    highlight:
-      theme.palette.type === 'light'
-        ? {
-            color: theme.palette.secondary.main,
-            backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-          }
-        : {
-            color: theme.palette.text.primary,
-            backgroundColor: theme.palette.secondary.dark,
-          },
+    highlight:{
+      color: theme.palette.secondary.main,
+      backgroundColor: lighten(theme.palette.secondary.light, 0.85),
+    },
     actions: {
       marginLeft: '13em',      
     },
@@ -125,6 +118,8 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 interface EnhancedTableToolbarProps {
   numSelected: number
   onDelete: () => void
+  searchQuery?: string
+  onSearchQueryChange: (q: string) => void
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -156,12 +151,13 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             </IconButton>
           </Tooltip>
         ) : (
-          // <Tooltip title="Filter list">
-          //   <IconButton aria-label="filter list">
-          //     <FilterListIcon />
-          //   </IconButton>
-          // </Tooltip>
-          <TextField className={classes.searchField} label='Search' type='search' />
+          <TextField 
+            className={classes.searchField} 
+            label='Search' 
+            type='search' 
+            value={props.searchQuery}
+            onChange={e => props.onSearchQueryChange(e.target.value)}
+          />
         )}
       </div>
     </Toolbar>
@@ -246,7 +242,7 @@ export default function EnhancedTable(p: Props) {
   
   const classes = useStyles()
 
-  const { order, orderBy, page, rowsPerPage } = p.lastSearchParams
+  const { order, orderBy, page, rowsPerPage, searchQuery } = p.lastSearchParams
   const todos = p.todos.data
   const todosTotalCount = p.todos.totalCount
 
@@ -271,6 +267,10 @@ export default function EnhancedTable(p: Props) {
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     p.onSearchParamsChange({ ...p.lastSearchParams, rowsPerPage: +event.target.value, page: 0 })
+  }
+
+  const handleSearchQueryChange = (searchQuery: string) => {
+    p.onSearchParamsChange({ ...p.lastSearchParams, searchQuery, page: 0 })
   }
 
   const getTableBody = () => <TableBody>
@@ -328,7 +328,7 @@ export default function EnhancedTable(p: Props) {
             </Tooltip>
           </TableCell>
         </TableRow>
-        );
+        )
       })}
   </TableBody>
 
@@ -359,7 +359,12 @@ export default function EnhancedTable(p: Props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar onDelete={p.onDeleteSelectedClick} numSelected={selectedTodosCount} />
+        <EnhancedTableToolbar 
+          onDelete={p.onDeleteSelectedClick} 
+          numSelected={selectedTodosCount} 
+          searchQuery={searchQuery}
+          onSearchQueryChange={handleSearchQueryChange}
+        />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}

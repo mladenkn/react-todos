@@ -1,4 +1,6 @@
 import faker from 'faker'
+import { __RouterContext as RouterContext } from 'react-router'
+import { useContext } from 'react';
 
 export enum AsyncOperationStatus {
     Processing='Processing', Succeeded='Succeeded', Failed='Failed'
@@ -24,9 +26,15 @@ export interface PagedListSearchParams<T> {
     orderBy: keyof T
     page: number
     rowsPerPage: number
+    searchQuery?: string
 }
 
 export interface PagedList<T> {
     data: T[]
     totalCount: number
+}
+
+export const useGoBack = () => {
+    const router = useContext(RouterContext)
+    return router.history.goBack
 }

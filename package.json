@@ -16,6 +16,7 @@
     "react-router": "^5.1.0",
     "react-router-dom": "^5.1.0",
     "react-scripts": "3.1.2",
+    "ts-debounce": "^1.0.0",
     "typescript": "3.6.3",
     "use-immer": "^0.3.4",
     "use-methods": "^0.5.1"

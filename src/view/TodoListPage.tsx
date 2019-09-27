@@ -31,13 +31,11 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
   useEffect(() => {
     logic.fetchList(initalSearchParams)
   }, [])
-  const fetchStatus: RequestStatus = logic.todos.loadStatus ? logic.todos.loadStatus : 'REQUEST_PENDING'
 
   console.log(logic)
 
-  const isEditing = logic.lastEdit && (logic.lastEdit.status === "USER_EDITING")
-  const isCreating = logic.lastCreate && (logic.lastCreate.status === "USER_CREATING")
-  const shouldConfirmEdit = logic.lastDelete && (logic.lastDelete.status === 'UNCONFIRMED')
+  const lastSearchParams = (logic.todoListSearchParams || initalSearchParams) as any
+  const fetchStatus: RequestStatus = logic.todos.loadStatus ? logic.todos.loadStatus : 'REQUEST_PENDING'
 
   return (
     <div className={classes.root}>
@@ -47,7 +45,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
           fetchStatus: fetchStatus,
           totalCount: logic.todos.totalCount
         }}
-        lastSearchParams={(logic.todoListSearchParams || initalSearchParams) as any}
+        lastSearchParams={lastSearchParams}
         onSearchParamsChange={logic.fetchList}
         onDeleteClick={logic.delete}
         onDeleteSelectedClick={logic.deleteSelected}
@@ -55,7 +53,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
         toggleItemSelect={logic.toggleTodoSelect}
         toggleAllSelect={logic.toggleSelectAll}
       />
-      {isEditing &&
+      {logic.isEditing &&
         <Dialog open={true} onClose={logic.cancelEdit}>
           <TodoEditor 
             className={classes.todoEditor}
@@ -65,7 +63,7 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
           />
         </Dialog>
       }
-      {isCreating &&
+      {logic.isCreating &&
         <Dialog open={true} onClose={logic.cancelEdit}>
           <TodoEditor 
             className={classes.todoEditor}
@@ -74,8 +72,11 @@ export const TodoListPage = (p: {api: TodoDataApi}) => {
           />
         </Dialog>
       }
-      {shouldConfirmEdit && 
-        <ConfirmDeleteDialog onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />}
+      {logic.shouldConfirmDelete && 
+        <Dialog open={true} onClose={logic.cancelDelete}>
+          <ConfirmDeleteDialog onConfirm={logic.confirmDelete} onCancel={logic.cancelDelete} />
+        </Dialog>
+      }
     </div>
   )
 }
@@ -99,7 +100,6 @@ const useConfirmDeleteDialogStyles = makeStyles({
 const ConfirmDeleteDialog = (p: {onConfirm: () => void, onCancel: () => void}) => {
   const classes = useConfirmDeleteDialogStyles()
   return (
-    <Dialog open={true} onClose={p.onCancel}>
       <div className={classes.root}>
         <Typography>Are you sure?</Typography>
         <div className={classes.actions}>
@@ -107,6 +107,5 @@ const ConfirmDeleteDialog = (p: {onConfirm: () => void, onCancel: () => void}) =
           <Button size='small' onClick={p.onConfirm} variant='outlined' color='primary'>OK</Button>
         </div>
       </div>
-    </Dialog>
   )
 }

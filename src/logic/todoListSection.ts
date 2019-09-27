@@ -2,6 +2,7 @@ import { FetchOf, RequestStatus, PagedListSearchParams, PagedList } from "../uti
 import { TodoDataApi } from "./todoDataApi"
 import { useImmer } from "use-immer"
 import { Todo, TodoEditableProps } from "./shared"
+import { debounce } from 'ts-debounce'
 
 interface State {
     lastFetch?: FetchOf<PagedList<Todo>>
@@ -80,6 +81,10 @@ export const useTodoListSectionLogic = (p: Props) => {
         ...state.lastEdit,
         todo: todos.data!.find(t => t.id === state.lastEdit!.itemId)
     }
+    
+    const isEditing = lastEdit && (lastEdit.status === "USER_EDITING")
+    const isCreating = state.lastCreate && (state.lastCreate.status === "USER_CREATING")
+    const shouldConfirmDelete = state.lastDelete && (state.lastDelete.status === 'UNCONFIRMED')
 
 
     
@@ -124,11 +129,10 @@ export const useTodoListSectionLogic = (p: Props) => {
         })
     }
 
-    const fetchList = (params: PagedListSearchParams<Todo>) => {
+    const debouncedFetch = debounce((params: PagedListSearchParams<Todo>) => {     
         updateState(stateDraft => {
             stateDraft.lastFetch = { data: undefined, status: 'REQUEST_PENDING' }
-            stateDraft.searchParams = params
-        })
+        })   
         p.api.fetchList(params)
             .then(response => {
                 updateState(stateDraft => {
@@ -144,6 +148,13 @@ export const useTodoListSectionLogic = (p: Props) => {
                     stateDraft.lastFetch!.status = 'REQUEST_FAILED'
                 })
             })
+    }, 500)
+
+    const fetchList = (params: PagedListSearchParams<Todo>) => {
+        updateState(stateDraft => {
+            stateDraft.searchParams = params
+        })
+        debouncedFetch(params)
     }
 
     const beginEdit = (todoId: number) => {
@@ -236,6 +247,9 @@ export const useTodoListSectionLogic = (p: Props) => {
         lastEdit,
         lastCreate: state.lastCreate,
         todoListSearchParams: state.searchParams, 
+        isEditing,
+        isCreating,
+        shouldConfirmDelete,
 
         toggleSelectAll,
         toggleTodoSelect,

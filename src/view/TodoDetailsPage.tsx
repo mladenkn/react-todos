@@ -5,6 +5,7 @@ import { Dialog } from "@material-ui/core"
 import { TodoDetails } from "./TodoDetails"
 import { TodoEditor } from "./TodoEditor"
 import { TodoDataApi } from "../logic/todoDataApi"
+import { useGoBack } from "../utils"
 
 
 const usePageStyles = makeStyles({
@@ -18,7 +19,7 @@ const usePageStyles = makeStyles({
   }
 })
 
-export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
+export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {  
   const classes = usePageStyles()
   
   const logic = useTodoDetailsLogic({
@@ -26,8 +27,7 @@ export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
     todoApi: p.api,
     onDelete: () => {}
   });
-  (window as any).logic = logic
-  console.log(logic)
+  const goBack = useGoBack()
   
   return (
     <Fragment>    
@@ -47,6 +47,7 @@ export const TodoDetailsPage = (p: {todoId: number, api: TodoDataApi}) => {
         className={classes.root} 
         startEdit={logic.startEdit} 
         delete={logic.delete} 
+        onGoBack={goBack}
       />
     </Fragment>
   )

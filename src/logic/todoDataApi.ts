@@ -17,6 +17,19 @@ const resolvesAfter = <T> (milis: number, data?: T) => {
 const todoJsonReviver = (key: string, value: any) => 
     key === 'createdAt' ? new Date(value) : value
 
+const doesTodoMatchSearchQuery = (searchQuery?: string) => (todo: Todo) => {
+    if(!searchQuery)
+        return true
+    if(todo.id === +searchQuery)
+        return true
+    if(todo.name.includes(searchQuery))
+        return true
+    if(todo.description.includes(searchQuery))
+        return true
+    else
+        return false    
+}
+
 export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
     const fetchList = (p: PagedListSearchParams<Todo>) => {
@@ -43,6 +56,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
                 else 
                     throw new Error()
             })
+            .filter(doesTodoMatchSearchQuery(p.searchQuery))
             .slice(pageStart, pageEnd)
 
         const r = {

@@ -41,6 +41,7 @@ interface TodoDetailsProps {
   className?: string 
   todo: Todo
   todoFetchStatus?: RequestStatus
+  onGoBack: () => void
   startEdit: () => void
   delete: () => void
 }
@@ -82,7 +83,7 @@ export const TodoDetails = (p: TodoDetailsProps) => {
     <div className={p.className}>
       <div className={classes.heading}>
         <div className={classes.actionsLeft}>
-          <IconButton className={classes.button}>
+          <IconButton className={classes.button} onClick={p.onGoBack}>
             <ArrowBackIcon />
           </IconButton>
         </div>
