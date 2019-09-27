@@ -3,6 +3,7 @@ import { TodoDataApi } from "./todoDataApi"
 import { useImmer } from "use-immer"
 import { Todo, TodoEditableProps } from "./shared"
 import { debounce } from 'ts-debounce'
+import { useTodoPostEffect } from "./todoEffects"
 
 interface State {
     lastFetch?: FetchOf<PagedList<Todo>>
@@ -36,7 +37,6 @@ export const useTodoListSectionLogic = (p: Props) => {
 
     const [state, updateState] = useImmer<State>(p.initialState || zeroState)
     console.log(state)
-
 
     const getCurrentTodos = () => {
         if(!state.lastFetch || !state.lastFetch.data)
