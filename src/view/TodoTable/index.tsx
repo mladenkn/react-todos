@@ -1,11 +1,7 @@
 import React from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import { Paper, Checkbox, IconButton, Tooltip, CircularProgress, TextField } from '@material-ui/core'
+import { Table, TableRow, TablePagination, TableCell, TableBody } from '@material-ui/core'
+import { Paper, Checkbox, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';

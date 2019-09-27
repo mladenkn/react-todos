@@ -14,7 +14,7 @@ const useStyles = makeStyles({
   },
   todoEditor: {
     padding: '1em',
-    width: '35em',
+    width: '30em',
   },
 })
 

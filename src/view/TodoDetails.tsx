@@ -1,6 +1,6 @@
 import React from "react"
 import { makeStyles } from '@material-ui/styles'
-import { Typography, IconButton, Dialog } from '@material-ui/core'
+import { Typography, IconButton } from '@material-ui/core'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'

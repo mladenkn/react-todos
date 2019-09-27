@@ -1,11 +1,8 @@
 import React from 'react'
-import { makeStyles, TextField, Button } from "@material-ui/core"
-import { Todo, TodoEditableProps } from '../logic/shared'
-import { RequestStatus } from '../utils'
-import { Formik, FormikActions, FormikProps, Form, Field, FieldProps } from 'formik';
+import { Typography, makeStyles, TextField, Button } from "@material-ui/core"
+import { TodoEditableProps } from '../logic/shared'
+import { Formik, Form, Field, FormikErrors } from 'formik';
 import clsx from 'clsx'
-import { Optional } from 'utility-types';
-
 
 const useStyles = makeStyles({
   root: {
@@ -22,6 +19,9 @@ const useStyles = makeStyles({
   submitButton: {
     marginLeft: '1em',
   },
+  fieldError: {
+    marginTop: '0.3em',
+  },
 })
 
 interface Props {
@@ -35,7 +35,12 @@ export const TodoEditor = (p: Props) => {
   const classes = useStyles()
 
   const validate = (values: TodoEditableProps) => {
-    
+    let errors: FormikErrors<TodoEditableProps> = {}
+    if(values.name === '')
+      errors.name = 'Name is required'
+    if(values.description === '')
+      errors.description = 'Description is required'
+    return errors
   }
 
   const onSubmit = (values: TodoEditableProps) => {
@@ -46,22 +51,26 @@ export const TodoEditor = (p: Props) => {
 
   return (
     <Formik onSubmit={onSubmit} validate={validate} initialValues={initialValues}>
-      {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) =>
+      {({ errors, touched }) =>
         <Form className={clsx(classes.root, p.className)}>          
+         
           <Field name='name'>
             {({ field }: any) =>
               <TextField label='Name' {...field} />
             }
           </Field>
-          <TextField 
-            className={classes.description}
-            multiline
-            name='description'
-            label='Description'
-            value={values.description}
-            onBlur={handleBlur}
-            onChange={handleChange}
-          />
+          {touched.name && errors.name && 
+            <Typography color='secondary' className={classes.fieldError}>{errors.name}</Typography>}
+         
+          <Field name='description'>
+            {({ field }: any) =>
+              <TextField className={classes.description} multiline label='Description' {...field} />
+            }
+          </Field>
+          {touched.description && errors.description && 
+            <Typography color='secondary' className={classes.fieldError}>{errors.description}</Typography>
+          }
+         
           <div className={classes.buttons}>
             <Button onClick={p.onCancel} color='secondary' variant='outlined'>Cancel</Button>
             <Button type='submit' className={classes.submitButton} color='primary' variant='outlined'>Submit</Button>
