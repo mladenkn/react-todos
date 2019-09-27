@@ -2,7 +2,7 @@ import React from 'react';
 import { TodoDetailsPage } from './TodoDetailsPage';
 import { createMuiTheme } from "@material-ui/core"
 import { ThemeProvider } from '@material-ui/styles'
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import { TodoListPage } from './TodoListPage';
 import { createTodoLocalStorageDataApi } from '../logic/todoDataApi';
 
@@ -27,6 +27,9 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <Router>
+        <Route exact path='/'>
+          <Redirect to="/todos" />
+        </Route>
         <Route 
           path='/todos/:id' 
           component={({match}: any) => <TodoDetailsPage api={api} todoId={match.params.id} />} 
