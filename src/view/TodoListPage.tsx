@@ -21,7 +21,7 @@ const initalSearchParams: PagedListSearchParams<TodoListItem> = {
   order: 'desc',
   orderBy: 'createdAt',
   page: 0,
-  rowsPerPage: 10,   
+  rowsPerPage: 6,   
 }
 
 export const TodoListPage = (p: {api: TodoDataApi}) => {

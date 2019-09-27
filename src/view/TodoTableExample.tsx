@@ -10,15 +10,11 @@ import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
+import { Paper, Checkbox, IconButton, Tooltip, CircularProgress, TextField } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { CircularProgress } from '@material-ui/core'
 import { PagedListSearchParams, RequestStatus } from '../utils';
 import { Link } from '../utils/components';
 import { TodoListItem } from '../logic/todoDataApi';
@@ -92,6 +88,8 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     root: {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(1),
+      marginBottom: '0.5em',
+      paddingTop: '1em',
     },
     highlight:
       theme.palette.type === 'light'
@@ -103,14 +101,23 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
             color: theme.palette.text.primary,
             backgroundColor: theme.palette.secondary.dark,
           },
-    spacer: {
-      flex: '1 1 100%',
-    },
     actions: {
-      color: theme.palette.text.secondary,
+      marginLeft: '13em',      
+    },
+    titleContainer: {
+      marginLeft: '1em'
+    },
+    selectedCount: {
+      fontSize: '2em',
     },
     title: {
-      flex: '0 0 auto',
+      fontSize: '3em',
+    },
+    searchField: {
+      width: '12em',
+    },
+    deleteAction: {
+      marginLeft: '6.4em',
     },
   }), { name: 'Toolbar'},
 );
@@ -123,38 +130,38 @@ interface EnhancedTableToolbarProps {
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
   const { numSelected } = props;
-
+ 
   return (
     <Toolbar
       className={clsx(classes.root, {
         [classes.highlight]: numSelected > 0,
       })}
     >
-      <div className={classes.title}>
+      <div className={classes.titleContainer}>
         {numSelected > 0 ? (
-          <Typography color="inherit" variant="subtitle1">
+          <Typography className={classes.selectedCount} color="inherit" variant="subtitle1">
             {numSelected} selected
           </Typography>
         ) : (
-          <Typography variant="h6" id="tableTitle">
+          <Typography className={classes.title} color='primary' variant="h6" id="tableTitle">
             Todos
           </Typography>
         )}
       </div>
-      <div className={classes.spacer} />
       <div className={classes.actions}>
         {numSelected > 0 ? (
           <Tooltip title="Delete">
-            <IconButton onClick={props.onDelete} aria-label="delete">
+            <IconButton className={classes.deleteAction} onClick={props.onDelete} aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </Tooltip>
         ) : (
-          <Tooltip title="Filter list">
-            <IconButton aria-label="filter list">
-              <FilterListIcon />
-            </IconButton>
-          </Tooltip>
+          // <Tooltip title="Filter list">
+          //   <IconButton aria-label="filter list">
+          //     <FilterListIcon />
+          //   </IconButton>
+          // </Tooltip>
+          <TextField className={classes.searchField} label='Search' type='search' />
         )}
       </div>
     </Toolbar>
@@ -179,8 +186,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     tableWrapper: {
       overflowX: 'auto',
-      minHeight: '30em',
-      minWidth: '39em',
+      minHeight: '26em',
+      minWidth: '38em',
     },
     visuallyHidden: {
       border: 0,
@@ -327,7 +334,7 @@ export default function EnhancedTable(p: Props) {
 
   const getPagination = () => 
     <TablePagination
-      rowsPerPageOptions={[5, 10, 25]}
+      rowsPerPageOptions={[6, 10, 25]}
       component="div"
       count={todosTotalCount!}
       rowsPerPage={rowsPerPage}

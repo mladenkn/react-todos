@@ -50,7 +50,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
             totalCount: entries.length,
         }
 
-        return resolvesAfter(200, r)
+        return resolvesAfter(300, r)
     }
 
     const fetch = (todoId: number) => {
