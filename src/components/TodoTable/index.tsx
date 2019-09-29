@@ -68,16 +68,6 @@ export function TodoTable(p: Props) {
     p.onSearchParamsChange({...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property})
   }
 
-  const handleEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
-    event.stopPropagation()
-    p.onEditClick(todoId)
-  }
-
-  const handleDeleteClick = (event: React.MouseEvent<unknown>, todoId: number) => {   
-    event.stopPropagation() 
-    p.onDeleteClick(todoId)
-  }
-
   const handleChangePage = (event: unknown, newPage: number) => {
     p.onSearchParamsChange({...p.lastSearchParams, page: newPage})
   }
@@ -143,8 +133,8 @@ export function TodoTable(p: Props) {
               <TodoTableBody 
                 todos={todos!}
                 onTodoSelect={p.toggleItemSelect}
-                onEditClick={handleEditClick}
-                onDeleteClick={handleDeleteClick}
+                onEditClick={p.onEditClick}
+                onDeleteClick={p.onDeleteClick}
               />
             }
           </Table>

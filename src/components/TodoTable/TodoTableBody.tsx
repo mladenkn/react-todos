@@ -10,8 +10,8 @@ interface Props {
   todos: (TodoListItem & {isSelected: boolean})[]
 
   onTodoSelect: (todoId: number) => void
-  onEditClick: (event: React.MouseEvent<unknown>, todoId: number) => void
-  onDeleteClick: (event: React.MouseEvent<unknown>, todoId: number) => void
+  onEditClick: (todoId: number) => void
+  onDeleteClick: (todoId: number) => void
 }
 
 const useTableBodyStyles = makeStyles({
@@ -33,6 +33,21 @@ const useTableBodyStyles = makeStyles({
 export const TodoTableBody = (p: Props) =>
 {
   const classes = useTableBodyStyles()
+
+  const handleEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
+    event.stopPropagation()
+    p.onEditClick(todoId)
+  }
+
+  const handleDeleteClick = (event: React.MouseEvent<unknown>, todoId: number) => {   
+    event.stopPropagation() 
+    p.onDeleteClick(todoId)
+  }
+
+  const handleDetailsClick = (event: React.MouseEvent<unknown>) => {
+    event.stopPropagation()
+  }
+
   return (
     <TableBody>
       {p.todos.map((todo, index) => {
@@ -59,14 +74,14 @@ export const TodoTableBody = (p: Props) =>
             <TableCell>
               <Link href={`/todos/${todo.id}`}>
                 <Tooltip title="Details">
-                  <IconButton className={classes.actionButton} size='small'>
+                  <IconButton className={classes.actionButton} onClick={handleDetailsClick} size='small'>
                     <DescriptionIcon className={classes.actionIcon} />
                   </IconButton>
                 </Tooltip>
               </Link>
               <Tooltip title="Edit">
                 <IconButton 
-                  onClick={event => p.onEditClick(event, todo.id)} 
+                  onClick={event => handleEditClick(event, todo.id)} 
                   className={classes.actionButton} 
                   size='small'
                 >
@@ -75,7 +90,7 @@ export const TodoTableBody = (p: Props) =>
               </Tooltip>
               <Tooltip title="Delete">
                 <IconButton 
-                  onClick={event => p.onDeleteClick(event, todo.id)} 
+                  onClick={event => handleDeleteClick(event, todo.id)} 
                   className={classes.actionButton} 
                   size='small'
                 >
