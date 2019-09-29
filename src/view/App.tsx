@@ -4,7 +4,7 @@ import { createMuiTheme } from "@material-ui/core"
 import { ThemeProvider } from '@material-ui/styles'
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import { TodoListPage } from './TodoListPage';
-import { createTodoLocalStorageDataApi } from '../logic/todoDataApi';
+import { createTodoLocalStorageDataApi } from '../dataAccess/todoDataApi';
 
 
 const theme = createMuiTheme({

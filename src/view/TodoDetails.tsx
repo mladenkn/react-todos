@@ -4,8 +4,8 @@ import { Typography, IconButton } from '@material-ui/core'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
-import { Todo } from "../logic/shared"
 import { RequestStatus } from "../utils"
+import { Todo } from "../dataAccess/todoDataApi"
 
 const useStyles = makeStyles({
   heading: {

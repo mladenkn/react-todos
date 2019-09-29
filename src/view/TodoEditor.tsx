@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, makeStyles, TextField, Button } from "@material-ui/core"
-import { TodoEditableProps } from '../logic/shared'
+import { TodoEditableProps } from '../stateMgmt/shared'
 import { Formik, Form, Field, FormikErrors, ErrorMessage } from 'formik';
 import clsx from 'clsx'
 

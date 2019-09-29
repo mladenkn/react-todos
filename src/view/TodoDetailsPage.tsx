@@ -1,12 +1,12 @@
 import { makeStyles } from "@material-ui/styles"
-import { useTodoDetailsLogic } from "../logic/todoDetails"
+import { useTodoDetailsLogic } from "../stateMgmt/todoDetails"
 import React, { Fragment, useEffect } from "react"
 import { Dialog } from "@material-ui/core"
 import { TodoDetails } from "./TodoDetails"
 import { TodoEditor } from "./TodoEditor"
-import { TodoDataApi } from "../logic/todoDataApi"
 import { useGoBack } from "../utils"
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog"
+import { TodoDataApi } from "../dataAccess/todoDataApi"
 
 
 const usePageStyles = makeStyles({

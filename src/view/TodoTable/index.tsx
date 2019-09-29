@@ -3,10 +3,12 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Table, TablePagination } from '@material-ui/core'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { PagedListSearchParams, RequestStatus } from '../../utils';
-import { TodoListItem } from '../../logic/todoDataApi';
 import { TodoTableHead } from './TodoTableHead';
 import { TodoTableToolbar } from './TodoTableToolbar';
 import { TodoTableBody } from './TodoTableBody';
+import { Todo } from '../../dataAccess/todoDataApi';
+
+export type TodoListItem = Omit<Todo, 'description'>
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

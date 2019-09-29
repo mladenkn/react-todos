@@ -1,7 +1,7 @@
-import { Todo, TodoEditableProps } from "./shared"
+import {  TodoEditableProps } from "./shared"
 import { FetchOf,  RequestStatus } from "../utils"
 import { useImmer } from "use-immer";
-import { TodoDataApi } from "./todoDataApi";
+import { Todo, TodoDataApi } from "../dataAccess/todoDataApi";
 
 export interface TodoDetailsLogic {
     editingStatus?: 'EDITING' | RequestStatus

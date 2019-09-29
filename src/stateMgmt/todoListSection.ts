@@ -1,8 +1,8 @@
 import { FetchOf, RequestStatus, PagedListSearchParams, PagedList } from "../utils"
-import { TodoDataApi } from "./todoDataApi"
 import { useImmer } from "use-immer"
-import { Todo, TodoEditableProps } from "./shared"
+import { TodoEditableProps } from "./shared"
 import { debounce } from 'ts-debounce'
+import { Todo, TodoDataApi } from "../dataAccess/todoDataApi"
 
 interface State {
     lastFetch?: FetchOf<PagedList<Todo>>

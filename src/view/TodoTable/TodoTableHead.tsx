@@ -1,7 +1,7 @@
-import { TodoListItem } from "../../logic/todoDataApi";
 import { makeStyles } from "@material-ui/styles";
 import { TableRow, Checkbox, TableHead, TableCell, TableSortLabel } from "@material-ui/core";
 import React from "react";
+import { TodoListItem } from ".";
 
 const todoPropsHeadCells = [
   { id: 'name' as keyof TodoListItem, disablePadding: true, label: 'Name' },

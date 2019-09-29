@@ -1,10 +1,10 @@
-import { TodoListItem } from "../../logic/todoDataApi";
 import { makeStyles } from "@material-ui/styles";
 import React from "react";
 import { TableBody, TableRow, Checkbox, IconButton, Tooltip, TableCell, Link } from "@material-ui/core";
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DescriptionIcon from '@material-ui/icons/Description';
+import { TodoListItem } from ".";
 
 interface Props {
   todos: (TodoListItem & {isSelected: boolean})[]

@@ -1,24 +1,6 @@
-import { Todo } from "./shared";
-import { PagedListSearchParams, PagedList } from "../utils";
+import { PagedList, PagedListSearchParams } from "../utils";
 import { Optional } from "utility-types";
-
-export type TodoListItem = Omit<Todo, 'description'>
-
-interface SaveResponse {
-    todo: Todo, 
-    list?: PagedList<Todo>
-}
-
-export interface TodoDataApi {
-    fetchList: (p: PagedListSearchParams<Todo>) => Promise<PagedList<Todo>>
-    fetch: (todoId: number) => Promise<Todo>
-    save: (todo: Omit<Todo, 'id'>, listParams?: PagedListSearchParams<Todo>) => Promise<SaveResponse>
-    delete: (todoIds: number[], listParams?: PagedListSearchParams<Todo>) => Promise<{list?: PagedList<Todo>}>
-}
-
-const resolvesAfter = <T> (milis: number, data?: T) => {
-    return new Promise<T>(resolve => setTimeout(() => resolve(data), milis))    
-}
+import { Todo } from "./todoDataApi";
 
 const todoJsonReviver = (key: string, value: any) => {
     if (key === 'createdAt') 
@@ -42,7 +24,7 @@ const doesTodoMatchSearchQuery = (searchQuery?: string) => (todo: Todo) => {
         return false    
 }
 
-export const createTodoLocalStorageDataApi = (): TodoDataApi => {
+export const createTodoLocalStorage = () => {
 
     const getAllTodos = () => Object.entries(localStorage)
         .filter(([key, value]) => key.startsWith('todos/'))
@@ -79,11 +61,9 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
         return { data, totalCount: allThatMatch.length }
     }
 
-    const promiseReturningFetchList = (p: PagedListSearchParams<Todo>) => resolvesAfter(500, fetchList(p))
-
     const fetch = (todoId: number) => {
         const todo = localStorage.getItem(`todos/${todoId}`)!
-        return resolvesAfter<Todo>(500, JSON.parse(todo, todoJsonReviver)) // simulating slow fetch
+        return JSON.parse(todo, todoJsonReviver)
     }
 
     const save = (todo: Optional<Todo, 'id'>, listParams?: PagedListSearchParams<Todo>) => {
@@ -99,16 +79,14 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
             todo: todoReadyToSave,
             list: listParams && fetchList(listParams!)
         }
-        return resolvesAfter<SaveResponse>(300, response)
+        return response
     }
 
     const delete_ = (todoIds: number[], listParams?: PagedListSearchParams<Todo>) => {
         for (const id of todoIds) 
             localStorage.removeItem(`todos/${id}`)
-        return listParams ? 
-            resolvesAfter(500, {list: fetchList(listParams!)}) :
-            resolvesAfter(500, {})
+        return listParams || {}
     }
 
-    return { fetchList: promiseReturningFetchList, fetch, save, delete: delete_ }
+    return { fetchList, fetch, save, delete: delete_ }
 }

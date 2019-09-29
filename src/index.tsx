@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './view/App';
 import * as serviceWorker from './serviceWorker';
-import { ensureTodosAreSaved } from './logic/generateData';
+import { ensureTodosAreSaved } from './stateMgmt/generateData';
 
 ensureTodosAreSaved()
 ReactDOM.render(<App />, document.getElementById('root'));

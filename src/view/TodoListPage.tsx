@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
-import { TodoTable } from './TodoTable'
-import { TodoListItem, TodoDataApi } from '../logic/todoDataApi';
-import { useTodoListSectionLogic } from '../logic/todoListSection';
+import { TodoTable, TodoListItem } from './TodoTable'
+import { useTodoListSectionLogic } from '../stateMgmt/todoListSection';
 import { RequestStatus, PagedListSearchParams } from '../utils';
 import { Dialog } from '@material-ui/core';
 import { TodoEditor } from './TodoEditor';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
+import { TodoDataApi } from '../dataAccess/todoDataApi';
 
 const useStyles = makeStyles({
   root: {
