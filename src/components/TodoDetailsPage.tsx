@@ -12,7 +12,7 @@ import { TodoDataApi } from "../dataAccess/todoDataApi"
 const usePageStyles = makeStyles({
   root: {
     padding: '1em',
-    width: '30em'
+    width: '35em'
   },
   todoEditor: {
     padding: '1em',

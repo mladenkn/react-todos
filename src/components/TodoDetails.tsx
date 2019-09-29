@@ -33,7 +33,7 @@ const useStyles = makeStyles({
     width: '80%',
   },
   body: {
-
+    padding: '0.5em 1.5em',
   },
 })
 

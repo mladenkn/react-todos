@@ -56,8 +56,7 @@ export const useTodoListSectionLogic = (p: Props) => {
     const lastEdit = state.lastEdit && state.lastFetch && (state.lastFetch.status === 'REQUEST_SUCCEESS') ? {
         ...state.lastEdit,
         todo: todos.data!.find(t => t.id === state.lastEdit!.itemId)
-    }
-    : undefined
+    } : undefined
     
     const isEditing = lastEdit && (lastEdit.status === "USER_EDITING")
     const isCreating = state.lastCreate && (state.lastCreate.status === "USER_CREATING")
@@ -88,6 +87,7 @@ export const useTodoListSectionLogic = (p: Props) => {
         p.api.delete(state.selectedItems, state.searchParams)
             .then(response => {
                 updateState(stateDraft => {
+                    console.log(response)
                     stateDraft.lastDelete!.status = 'REQUEST_SUCCEESS'
                     stateDraft.lastFetch = {
                         data: response.list!,

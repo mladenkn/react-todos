@@ -85,7 +85,7 @@ export const createTodoLocalStorage = () => {
     const delete_ = (todoIds: number[], listParams?: PagedListSearchParams<Todo>) => {
         for (const id of todoIds) 
             localStorage.removeItem(`todos/${id}`)
-        return listParams ? fetchList(listParams) : {}
+        return listParams ? {list : fetchList(listParams) }: {}
     }
 
     return { fetchList, fetch, save, delete: delete_ }

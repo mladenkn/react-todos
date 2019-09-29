@@ -29,7 +29,7 @@ export const createTodoLocalStorageDataApi = (): TodoDataApi => {
 
     const fetchList = (p: PagedListSearchParams<Todo>) => resolvesAfter(300, storage.fetchList(p))
     
-    const fetch = (todoId: number) => resolvesAfter(100, storage.fetch(todoId))
+    const fetch = (todoId: number) => resolvesAfter(100, storage.fetch(todoId)) // simulating REST API with delay
     
     const save = (todo: Omit<Todo, 'id'>, listParams?: PagedListSearchParams<Todo>) => 
         resolvesAfter(300, storage.save(todo, listParams))
