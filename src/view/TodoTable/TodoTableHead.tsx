@@ -32,14 +32,12 @@ const useTodoTableHeadStyles = makeStyles({
     top: 20,
     width: 1,
   },
-  actionHeadCell: {
-    paddingLeft: '2.1em'
-  },
 })
 
 export const TodoTableHead = (props: Props) => {
   const classes = useTodoTableHeadStyles()
   const { onSelectAllClick, order, orderBy, onRequestSort } = props;
+  
   const createSortHandler = (property: keyof TodoListItem) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
@@ -76,9 +74,7 @@ export const TodoTableHead = (props: Props) => {
             </TableSortLabel>
           </TableCell>
         ))}
-        <TableCell className={classes.actionHeadCell}>
-          Actions
-        </TableCell>
+        <TableCell />
       </TableRow>
     </TableHead>
   );

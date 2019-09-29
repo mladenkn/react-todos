@@ -1,15 +1,12 @@
 import React from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { Table, TableRow, TablePagination, TableCell, TableBody } from '@material-ui/core'
-import { Paper, Checkbox, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import DescriptionIcon from '@material-ui/icons/Description';
+import { Table, TablePagination } from '@material-ui/core'
+import { Paper, CircularProgress } from '@material-ui/core'
 import { PagedListSearchParams, RequestStatus } from '../../utils';
-import { Link } from '../../utils/components';
 import { TodoListItem } from '../../logic/todoDataApi';
 import { TodoTableHead } from './TodoTableHead';
 import { TodoTableToolbar } from './TodoTableToolbar';
+import { TodoTableBody } from './TodoTableBody';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,19 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
       overflowX: 'auto',
       minHeight: '26em',
       minWidth: '38em',
-    },
-    nameCell: {
-      width: '10em'
-    },
-    createdAtCell: {
-      width: '12em',
-    },
-    actionButton: {
-      padding: '0.3em',
-      marginRight: '0.5em',
-    },
-    actionIcon: {
-      fontSize: '1.2em',
     },
     paginationContainer: {
       height: '3.5em'
@@ -69,7 +53,7 @@ export interface Props {
   onTodoAddClick: () => void
 }
 
-export default function TodoTable(p: Props) {
+export function TodoTable(p: Props) {
   
   const classes = useStyles()
 
@@ -82,7 +66,7 @@ export default function TodoTable(p: Props) {
     p.onSearchParamsChange({...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property})
   }
 
-  const onEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
+  const handleEditClick = (event: React.MouseEvent<unknown>, todoId: number) => {
     event.stopPropagation()
     p.onEditClick(todoId)
   }
@@ -103,64 +87,6 @@ export default function TodoTable(p: Props) {
   const handleSearchQueryChange = (searchQuery: string) => {
     p.onSearchParamsChange({ ...p.lastSearchParams, searchQuery, page: 0 })
   }
-
-  const getTableBody = () => <TableBody>
-    {todos!.map((todo, index) => {
-      const labelId = `enhanced-table-checkbox-${index}`
-      return (
-        <TableRow
-          hover
-          onClick={() => p.toggleItemSelect(todo.id)}
-          role="checkbox"
-          aria-checked={todo.isSelected}
-          tabIndex={-1}
-          key={todo.id}
-          selected={todo.isSelected}
-        >
-          <TableCell padding="checkbox">
-            <Checkbox
-              checked={todo.isSelected}
-              inputProps={{ 'aria-labelledby': labelId }}
-            />
-          {/* <TableCell align="left">{row.id}</TableCell> */}
-          </TableCell>
-          <TableCell className={classes.nameCell} component="th" id={labelId} scope="row" padding="none">
-            {todo.name}
-          </TableCell>
-          <TableCell className={classes.createdAtCell} align="left">
-            {todo.createdAt.toLocaleDateString()} - {todo.createdAt.toLocaleTimeString()}
-          </TableCell>
-          <TableCell>
-            <Link href={`/todos/${todo.id}`}>
-              <Tooltip title="Details">
-                <IconButton className={classes.actionButton} size='small'>
-                  <DescriptionIcon className={classes.actionIcon} />
-                </IconButton>
-              </Tooltip>
-            </Link>
-            <Tooltip title="Edit">
-              <IconButton 
-                onClick={event => onEditClick(event, todo.id)} 
-                className={classes.actionButton} 
-                size='small'
-              >
-                <EditIcon className={classes.actionIcon} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton 
-                onClick={event => handleDeleteClick(event, todo.id)} 
-                className={classes.actionButton} 
-                size='small'
-              >
-                <DeleteIcon className={classes.actionIcon} />
-              </IconButton>
-            </Tooltip>
-          </TableCell>
-        </TableRow>
-        )
-      })}
-  </TableBody>
 
   const getPagination = () => 
     <TablePagination
@@ -211,7 +137,14 @@ export default function TodoTable(p: Props) {
                 fetched ? (selectedTodosCount > 0 && selectedTodosCount < todos!.length) : false
               }
             />
-            {fetched && getTableBody()}
+            {fetched &&
+              <TodoTableBody 
+                todos={todos!}
+                onTodoSelect={p.toggleItemSelect}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+              />
+            }
           </Table>
           {fetching &&
             <div className={classes.circularProgressContainer}>
