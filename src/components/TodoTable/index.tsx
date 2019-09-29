@@ -65,7 +65,9 @@ export function TodoTable(p: Props) {
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof TodoListItem) => {
     const isDesc = orderBy === property && order === 'desc'
-    p.onSearchParamsChange({...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property})
+    p.onSearchParamsChange({
+      ...p.lastSearchParams, order: isDesc ? 'asc' : 'desc', orderBy: property, page: 0
+    })
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
