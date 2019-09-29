@@ -1,4 +1,4 @@
-import { PagedList, PagedListSearchParams } from "../utils";
+import { PagedListSearchParams } from "../utils";
 import { Optional } from "utility-types";
 import { Todo } from "./todoDataApi";
 
@@ -85,7 +85,7 @@ export const createTodoLocalStorage = () => {
     const delete_ = (todoIds: number[], listParams?: PagedListSearchParams<Todo>) => {
         for (const id of todoIds) 
             localStorage.removeItem(`todos/${id}`)
-        return listParams || {}
+        return listParams ? fetchList(listParams) : {}
     }
 
     return { fetchList, fetch, save, delete: delete_ }
